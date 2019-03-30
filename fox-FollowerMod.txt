@@ -1,0 +1,89 @@
+Multi-Follower Spell Tome Learning
+------
+Implements simple multi-follower support, with spell tome learning and catch-up / teleporting.
+Supports any follower (or animal) that uses the vanilla DialogueFollower system.
+
+[h1][u]Skyrim Special Edition Note[/u][/h1]
+[b]This will eventually make its way to SSE - I'll update this section when it does!
+As it would require SKSE64, it would unfortunately be compatible with PC only.
+However, a non-SKSE "lite" version that forgoes Spell Tome Learning should be possible.[/b]
+
+[h1]Requirements[/h1]
+Requires SKSE: http://skse.silverlock.org/
+
+[h1]Usage[/h1]
+Recruit and otherwise use followers as normal. Currently, a maximum of 10 may be recruited.
+Vanilla followers from an existing save will be "imported" automatically.
+
+While in your party, followers can automatically use spells from any spell tome in their inventory.
+To teach or un-teach spells, simply trade spell tomes with your follower.
+
+To command all followers at once, hold your "Sprint" key while initiating dialogue with a follower.
+
+[h1]Additional Information[/h1]
+Fully supports animal followers too! (provided they use the vanilla DialogueFollower system)
+
+Catch-up / teleporting is automatic, based on distance and line of sight.
+When lagging behind, they will continually increase their SpeedMult until they catch up.
+If too far, they will instead automatically teleport behind you, unless you're riding a mount.
+(This includes if you are thrown in jail, etc. - there are currently no location checks)
+
+Spell tome learning avoids manipulating any spells a follower already knows from vanilla.
+However, many followers have 0 magicka growth, and are stuck at 50 magicka regardless of level.
+Thus, if needed, followers' minimum magicka is adjusted to meet their most expensive learned spell.
+
+[h1]Configuration[/h1]
+foxFollow comes with a few config variables:
+[list][*][b]1foxFollowTeleport[/b] - enable teleporting? [i]0/1 (default 1)[/i]
+[*][b]1foxFollowMaxDist[/b] - teleport distance, speedup distance is 0.5x this [i](default 4096.0)[/i]
+[*][b]1foxFollowAdjMagicka[/b] - adjust magicka for learned spells? [i]0/1 (default 1)[/i][/list]
+Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
+e.g. "set 1foxFollowAdjMagicka to 0" to disable follower magicka adjustment for learned spells.
+
+For performance reasons, changes only take effect after talking to any follower.
+Setting 1foxFollowMaxDist to -1 will completely disable catch-up / teleport functionality.
+
+[h1]Compatibility[/h1]
+Should be compatible with anything that isn't also a follower overhaul. :P
+(Specifically, anything that doesn't modify DialogueFollower or DialogueFollowerScript)
+
+[h1]Optional Plugins[/h1]
+By default, 2 or more followers yields derpy follower AI, which can be mitigated using this plugin:
+https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894
+
+It is also possible to write spell tomes from (vanilla) equipped spells using this plugin:
+https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868
+
+[h1]Uninstall Steps[/h1]
+Dismiss all followers in your party (very important!), then remove the plugin as normal.
+Optionally, use ReSaver (or similar) to remove any leftover references in your save:
+https://www.nexusmods.com/skyrim/mods/76776
+
+[b]Warning:[/b] If you don't dismiss all followers before removing the plugin, they will permanently remember any spells learned from spell tomes, and may be permanently stuck in a follow state. Please avoid doing this!
+
+[h1]Known Issues[/h1]
+It's possible to confuse the plugin by giving one follower an order and, before they've finished saying their line, immediately exiting dialogue and talking to another follower. This is because the vanilla DialogueFollower system:
+[olist][*]Only differentiates between a single normal/animal follower
+[*]Only executes commands after a follower has finished saying their line[/olist]
+The plugin tracks who you're giving orders to by whom you last initiated dialogue with.
+Thus, if you tell Alice to "wait here" and immediately talk to Bob, the command will apply to Bob once Alice has finished talking.
+(Note: Non-issue if Alice is a dude and Bob is a dog - we can always tell them apart, per above)
+
+A similar situation occurs holding "Sprint" to command all followers - if you give a command and then immediately initiate dialogue again, the "Sprint" state can change before the command is executed.
+
+Worst-case scenario though, nothing breaks! :)
+
+[h1]Acknowledgments[/h1]
+NorthStar's Followers Keep Up:
+https://steamcommunity.com/sharedfiles/filedetails/?id=10172
+Catch-up / teleport functionality was heavily influenced by this plugin. Good stuff!
+
+TheTalkieToaster's Companion Share & Recruit:
+https://steamcommunity.com/sharedfiles/filedetails/?id=119922465
+https://www.nexusmods.com/skyrim/mods/29836
+I used the original Oblivion CSR for years, and can't imagine going back and playing without it.
+The Skyrim version is pretty rad too, and deserves a mention!
+------
+Revision History:
+r1:
+-- Initial release.
