@@ -1,0 +1,90 @@
+Simple Pet Fox - Kitt / Sola
+------
+Adds Kitt and Sola, two simple pet foxes, to Dragonsreach.
+
+[h1]Usage[/h1]
+Simply approach and talk to either fox, and they'll be recruited into your party.
+If you already have an animal following, that animal will be dismissed.
+Either fox will return to Dragonsreach when dismissed, and can be recruited again at any time.
+
+[h1]Additional Information[/h1]
+Both foxes level with the player to 50, like other vanilla followers.
+They otherwise have normal stats, but are marked as essential (bleedout state at 0 health).
+
+Kitt, the red fox, is the bolder of the two and tanks Dragons like a champ.
+Sola, the snow fox, is less aggressive, but possesses a snow fox's normal frost resistance.
+
+[h1]Compatibility[/h1]
+Should be compatible with just about anything, regardless of load order.
+Should work in any multi-follower mod that supports vanilla animal followers.
+
+[h1]Optional Plugins[/h1]
+By default, foxes have rather annoying idle breathing sounds, but can be silenced using this plugin:
+https://steamcommunity.com/sharedfiles/filedetails/?id=74276765
+
+To command both foxes at once (with catch-up / teleport functionality), try MFSTL:
+https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452
+(Note: Foxes can not learn spells - I couldn't figure out how to define animations to cast them!)
+
+[h1]Uninstall Steps[/h1]
+Simply dismiss any fox present in your party, then remove the plugin as normal.
+Optionally, use ReSaver (or similar) to remove any leftover references in your save:
+https://www.nexusmods.com/skyrim/mods/76776
+
+[h1]Known Issues[/h1]
+The bleedout state on animals is a little weird - since they have no bleedout animations, they will appear to just sit there in an idle combat state. However, they will eventually become active again, like normal followers.
+------
+Revision History:
+r13:
+-- Fixed very minor script goof
+-- Set 1foxPetRace HP regen to playable races' default of 0.7
+
+r12:
+-- Minor script cleanup
+
+r11:
+-- Improved compatibility with multi-follower frameworks (activating a fox no longer attempts to add it to the party if its "teammate" status is already set, or if it already has available dialogue)
+-- Fixed script's "None" PlayerRef on old saves (script will fix if necessary upon activating a fox)
+-- Added in-game messages for any necessary updating done via script (e.g. for the above change)
+
+r10:
+-- Fix vanilla SetAnimal / DismissAnimal scripts forcing pet's lockpicking ability to 0 (doesn't really matter? But nice to fix)
+-- Fix overriding Stray Dog dialogue with generic *blank stare* (oops!)
+-- Small script code cleanups, particularly with "picking up" dropped items (and immediately dropping them again)
+(Note: There is a vanilla bug where items taken by followers are sometimes marked as stolen. Unfortunately, I wasn't able to fix this.)
+
+r9:
+-- Fixed a minor (but longstanding) issue where foxes could be issued orders after being released from the party, due to the dialog scripts not being packaged into the BSA archive (oops!)
+
+r8:
+-- Fixed issue where foxes could get stuck bleedout (vanilla bug)
+-- Fixed issue where foxes could get stuck in a combat state after combat ended because of bleedout (vanilla bug)
+-- Both foxes should more reliably wander around Dragonsreach when not in the player's party
+
+r7:
+-- Automatic bleedout fix in case the foxes do get stuck in bleedout state (no need to zone / manually fix / etc.)
+-- Foxes can now be given orders like normal human followers, because they're sharp. If pointed at a chest / cupboard / etc. they will happily toss everything inside all over the floor, making a huge mess.
+-- Old pets are now properly dismissed when adding a fox as a follower (broke this in r6 - whoops!)
+
+r6:
+-- Code cleanup in scripts
+-- Partial fix for "broken bleedout" state (still bleeding out even though IsBleedingOut returns false) - activating a fox in a broken bleedout state will reset it
+
+r5:
+-- When activating a fox that is not in your party, it will now kick your old pet (useful if you have a "lost" stray dog etc.)
+-- Added more useful messages when activating a fox ("Kitt has joined your party.", etc.)
+
+r4:
+-- Removed needless Update.esm master (nothing from any updates have been used or modified)
+-- Fixed "You already have a pet." message displaying when trying to activate either fox in bleedout state.
+
+r3:
+-- Removed ArmorAddon entries; the fox companion race now directly copies morph/armor data from FoxRace. Will now be compatible with any plugin that modifies these entries.
+-- Buffed damage by 60% (matches dogs now)
+
+r2:
+-- Added Sola, a snow fox
+-- A message is now displayed if you can't take a fox because you already have a pet
+
+r1:
+-- Initial release.
