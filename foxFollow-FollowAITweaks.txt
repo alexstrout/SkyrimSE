@@ -1,0 +1,54 @@
+Follower AI Tweaks
+------
+Implements a number of tweaks to allow for smoother AI following in large groups.
+
+[h1][u]Skyrim Special Edition Note[/u][/h1]
+[b]This will eventually make its way to SSE - I'll update this section when it does!
+As it would not rely on SKSE64, it should be compatible with all platforms.[/b]
+
+[h1]Additional Information[/h1]
+Tweaks the following GMSTs:
+[list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0000 -> 0.2500
+[*][b]fBumpReactionSmallWaitTimer[/b]: 3.0000 -> 0.7500
+	More responsive "move away" behavior when bumping into AI
+[*][b]fFollowerSpacingAtDoors[/b]: 200.0000 -> 96.0000
+[*][b]fFollowMatchSpeedZoneWidth[/b]: 128.0000 -> 384.0000
+[*][b]fFollowSlowdownZoneWidth[/b]: 150.0000 -> 96.0000
+	Smoother close-range following (e.g. when walking)
+[*][b]fFollowSpaceBetweenFollowers[/b]: 192.0000 -> 96.0000
+	Much smoother following with 2 or more followers
+[*][b]fFollowStartSprintDistance[/b]: 500.0000 -> 384.0000
+[*][b]fSummonedCreatureMaxFollowDist[/b]: 400.0000 -> 320.0000
+[*][b]fSummonedCreatureMinFollowDist[/b]: 250.0000 -> 192.0000
+	Matches new PlayerFollwerPackage ranges below
+[*][b]iNumberActorsAllowedToFollowPlayer[/b]: 6 -> 14
+	Unsure, but MFSTL does allow 10 followers instead of 2, so bumped up by 8[/list]
+
+Also tweaks PlayerFollowerPackage:
+[list][*][b]Min Radius[/b]: 256.0000 -> 192.0000
+[*][b]Max Radius[/b]: 384.0000 -> 320.0000
+	Tighter following behavior[/list]
+
+The above tweaks primarily apply to recruited followers, and may or may not apply to quest followers on a case-by-case basis (they typically use all sorts of different AI packages).
+
+[h1]Compatibility[/h1]
+Should be compatible with anything that doesn't also mess with follower AI.
+(Specifically, anything that doesn't modify the above GMSTs or PlayerFollowerPackage)
+
+[h1]Uninstall Steps[/h1]
+Simply remove the plugin as normal; no save cleaning necessary.
+------
+Revision History:
+r4:
+-- Reverted [b]Maintain Speed at Goal[/b] in PlayerFollowerPackage back to False.
+
+r3:
+-- Oops
+
+r2:
+-- Flipped [b]Random conversations[/b] in PlayerFollowerPackage back to False. Repeatedly chatty groups could start to get a little annoying!
+-- Flipped [b]Maintain Speed at Goal[/b] in PlayerFollowerPackage to True - the default of False appears to cause conflicts in their pacing when nearing the player, particularly if the player is running.
+-- Decreased [b]fFollowStartSprintDistance[/b] to 384 (default 500), to be more in line with new following distances and remain closer to player when navigating complex routes.
+
+r1:
+-- Initial release.
