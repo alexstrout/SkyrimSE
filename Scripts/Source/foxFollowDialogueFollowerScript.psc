@@ -600,8 +600,10 @@ function FollowerMultiFollowWait(ReferenceAlias FollowerAlias, bool isFollower, 
 	if (mode > 0)
 		;SetObjectiveDisplayed(10, abforce = true)
 		FollowerAlias.RegisterForSingleUpdateGameTime(WaitAroundForPlayerGameTime)
+		FollowerAlias.UnRegisterForUpdate()
 	else
 		;SetObjectiveDisplayed(10, abdisplayed = false)
+		FollowerAlias.UnRegisterForUpdateGameTime()
 		FollowerAlias.RegisterForSingleUpdate(InitialUpdateTime)
 	endif
 endFunction

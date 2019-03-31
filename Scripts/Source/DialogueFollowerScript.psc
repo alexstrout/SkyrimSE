@@ -1,7 +1,7 @@
 ScriptName DialogueFollowerScript extends Quest Conditional
 {Rewrite of DialogueFollowerScript that redirects functionality to foxFollowDialogueFollowerScript - this could not just be a new script itself due to use in other scripts}
 
-;Begin Vanilla DialogueFollowerScript Members
+;Begin Vanilla / USKP DialogueFollowerScript Members
 GlobalVariable Property pPlayerFollowerCount Auto
 GlobalVariable Property pPlayerAnimalCount Auto
 ReferenceAlias Property pFollowerAlias Auto
@@ -23,7 +23,10 @@ Int Property iFollowerDismiss Auto Conditional
 ; PATCH 1.9: 77615: remove unplayable hunting bow when follower is dismissed
 Weapon Property FollowerHuntingBow Auto
 Ammo Property FollowerIronArrow Auto
-;End Vanilla DialogueFollowerScript Members
+
+;USKP 2.1.3 - For Mjoll's poorly thought out "first time in Windhelm" idle.
+int Property USKPMjollInWindhelm = 0 Auto Conditional
+;End Vanilla / USKP DialogueFollowerScript Members
 
 foxFollowDialogueFollowerScript Property foxFollowDialogueFollower Auto
 
