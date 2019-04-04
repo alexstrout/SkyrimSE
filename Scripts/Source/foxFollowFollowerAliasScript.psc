@@ -23,6 +23,9 @@ bool GlobAdjMagicka
 float Property CombatWaitUpdateTime = 12.0 AutoReadOnly
 float Property FollowUpdateTime = 4.5 AutoReadOnly
 
+;================
+;Variable Management
+;================
 ;Reset all FollowerAdj* values to 0
 ;This should never be needed, but called on DialogueFollower's SetFollowerAlias and RemoveFollowerAlias as a safeguard
 function ResetAdjValues()
@@ -32,13 +35,49 @@ function ResetAdjValues()
 endFunction
 
 ;Update our cached global values so we don't have to call GetValue every update
-;Currently called on DialogueFollower's CheckForModUpdate (and anywhere that's called - e.g. our OnActivate)
+;Currently called (for all followers) on DialogueFollower's CheckForModUpdate (and anywhere that's called - e.g. our OnActivate)
 function UpdateGlobalValueCache()
 	GlobTeleport = DialogueFollower.GlobalTeleport.GetValue() as bool
 	GlobMaxDist = DialogueFollower.GlobalMaxDist.GetValue()
 	GlobAdjMagicka = DialogueFollower.GlobalAdjMagicka.GetValue() as bool
 endFunction
 
+;================
+;Manual State Management
+;================
+;Track last follower activated so we have something to fall back on later - and many other important things...
+event OnActivate(ObjectReference akActivator)
+	;Debug.Trace("foxFollowActor - activated! :|")
+	if (akActivator == PlayerRef)
+		;Debug.Trace("foxFollowActor - activated by Player! :D")
+		DialogueFollower.CheckForModUpdate()
+		DialogueFollower.UpdateFollowerCount()
+
+		;Set CommandMode based on hotkey being held down
+		int commandMode = 0
+		if (DialogueFollower.RequestingCommandMode())
+			commandMode = 1
+			DialogueFollower.FollowerCommandModeMessage.Show()
+		endif
+		DialogueFollower.SetCommandMode(commandMode)
+
+		;Set ourself as the preferred follower until we've quit gabbing
+		;CommandMode will also stay valid during this time, until either consumed by a command or cleared by ClearCommandMode
+		Actor ThisActor = Self.GetReference() as Actor
+		SetMinMagicka(ThisActor, FollowerAdjMagickaCost)
+		DialogueFollower.SetPreferredFollowerAlias(ThisActor)
+
+		;Finally, make sure our OnUpdate is alive, just in case - use slower interval, since we're just beginning dialogue and will probably be near player for a bit
+		SetSpeedup(ThisActor, false) ;We should probably immediately stop zooming around too
+		RegisterForSingleUpdate(CombatWaitUpdateTime)
+		;Debug.Trace("foxFollowActor - finished being activated by Player :(")
+	endif
+endEvent
+
+;================
+;Automatic State Management
+;================
+;Dismiss follower if waiting around too long, like vanilla behavior
 event OnUpdateGameTime()
 	Actor ThisActor = Self.GetReference() as Actor
 	if (!ThisActor)
@@ -53,6 +92,7 @@ event OnUpdateGameTime()
 	endif
 endEvent
 
+;Wait around if we unload... while waiting... like vanilla behavior (hmm)
 event OnUnload()
 	Actor ThisActor = Self.GetReference() as Actor
 	if (!ThisActor)
@@ -65,26 +105,35 @@ event OnUnload()
 	endif
 endEvent
 
+;Dismiss follower if in combat with player, like vanilla behavior
+;Note: If we're receiving this event, then our Actor is guaranteed be alive and well
 event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	Actor ThisActor = Self.GetReference() as Actor
 
+	;Per Vanilla - "Dismissing follower because he is now attacking the player"
 	if (akTarget == PlayerRef)
 		DialogueFollower.DismissMultiFollower(Self, DialogueFollower.IsFollower(ThisActor), 0, 0)
 	endif
 
 	;HACK Begin registering combat check to fix getting stuck in combat (bug in bleedouts for animals)
-	;This should be bloat-friendly as it will never fire more than once at a time, even if OnActivate is called multiple times in this time frame
+	;This should be bloat-friendly as it will never fire more than once at a time, even if OnCombatStateChanged is called multiple times in this time frame
 	if (aeCombatState == 1)
-		SetSpeedup(ThisActor, false)
+		SetSpeedup(ThisActor, false) ;We should probably immediately stop zooming around too
 		RegisterForSingleUpdate(CombatWaitUpdateTime)
 	endif
 endEvent
 
+;Dismiss follower if s/he somehow dies, like vanilla behavior
+;Note: If we're receiving this event, then our Actor is guaranteed be alive and well... Wait
 event OnDeath(Actor akKiller)
+	;Per Vanilla - "Clearing the follower because the player killed him."
 	;Just let DismissMultiFollower handle death via express dismissal - iMessage -1 tells DismissMultiFollower to skip any messages
 	DialogueFollower.DismissMultiFollower(Self, DialogueFollower.IsFollower(Self.GetReference() as Actor), -1, 0)
 endEvent
 
+;================
+;Spell Tome Learning
+;================
 event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	Book SomeBook = akBaseItem as Book
 	if (SomeBook)
@@ -238,31 +287,13 @@ function SetMinMagicka(Actor ThisActor, int cost = -1, bool enumSpellsOnEqualCos
 	;Debug.Trace("foxFollowActor - magicka stuff buffing by required minimum calc " + FollowerAdjMagicka)
 endFunction
 
-;Track last follower activated so we have something to fall back on later
-event OnActivate(ObjectReference akActivator)
-	;Debug.Trace("foxFollowActor - activated! :|")
-	if (akActivator == PlayerRef)
-		;Debug.Trace("foxFollowActor - activated by Player! :D")
-		DialogueFollower.CheckForModUpdate()
-		DialogueFollower.UpdateFollowerCount()
-
-		;Set CommandMode based on hotkey being held down
-		int commandMode = 0
-		if (DialogueFollower.RequestingCommandMode())
-			commandMode = 1
-			DialogueFollower.FollowerCommandModeMessage.Show()
-		endif
-		DialogueFollower.SetCommandMode(commandMode)
-
-		;Set ourself as the preferred follower until we've quit gabbing
-		;CommandMode will also stay valid during this time, until either consumed by a command or cleared by ClearCommandMode
-		Actor ThisActor = Self.GetReference() as Actor
-		SetMinMagicka(ThisActor, FollowerAdjMagickaCost)
-		DialogueFollower.SetPreferredFollowerAlias(ThisActor)
-		;Debug.Trace("foxFollowActor - finished being activated by Player :(")
-	endif
-endEvent
-
+;================
+;OnUpdate Loop - Follower Catch-up / Teleporting, Animal Bleedout Fix
+;Note: We use continual SingleUpdate registrations to avoid issues listed here: https://www.creationkit.com/index.php?title=RegisterForUpdate_-_Form#Important_Warning
+;================
+;Handle catch-up when following player, or combat bleedout fix if in combat
+;Note: This update loop is always running, in case WaitingForPlayer is tampered with externally, or our Actor is temporarily invalid (e.g. level transitions)
+;However, CombatWaitUpdateTime is very non-intensive, with a heartbeat only 5 times per minute
 event OnUpdate()
 	Actor ThisActor = Self.GetReference() as Actor
 	if (!ThisActor)
@@ -281,6 +312,8 @@ event OnUpdate()
 	&& ThisActor.GetActorValue("WaitingForPlayer") == 0 \
 	&& !ThisActor.IsDoingFavor())
 		float maxDist = GlobMaxDist ;4096.0
+		;Note: They may starve other scripts of LOS picks if we have many followers - see https://www.creationkit.com/index.php?title=RegisterForLOS_-_Form
+		;However, as we're doing this on a fairly forviging interval (and not registering for LOS events), I think this should be OK
 		if (!PlayerRef.HasLOS(ThisActor))
 			maxDist *= 0.5
 		endif
@@ -290,6 +323,7 @@ event OnUpdate()
 			;However, if we teleport into the ground, Skyrim will eventually place us somewhere valid
 			;Where's Unreal's LastAnchor property when you need it? :|
 			;Teleporting 32 units above player allows some leeway with slopes while preventing too many falling noises
+			;Turns out a simple Disable/Enable does the trick - d'oh!
 			float aZ = PlayerRef.GetAngleZ()
 			ThisActor.Disable(false)
 			ThisActor.MoveTo(PlayerRef, -192.0 * Math.Sin(aZ), -192.0 * Math.Cos(aZ), 32.0, true)

@@ -12,6 +12,9 @@ Actor Property PlayerRef Auto
 
 float Property CombatWaitUpdateTime = 12.0 AutoReadOnly
 
+;================
+;Pet Management (Add / Remove)
+;================
 function foxPetAddPet()
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
@@ -45,26 +48,9 @@ function foxPetRemovePet(Actor ThatActor = None)
 	ThatActor.SetActorValue("WaitingForPlayer", 0)
 endFunction
 
-event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-	;HACK Begin registering combat check to fix getting stuck in combat (bug in bleedouts for animals)
-	;This should be bloat-friendly as it will never fire more than once at a time, even if OnActivate is called multiple times in this time frame
-	if (aeCombatState == 1)
-		RegisterForSingleUpdate(CombatWaitUpdateTime)
-	endif
-endEvent
-
-event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	Actor ThisActor = (Self as ObjectReference) as Actor
-
-	;Immediately drop it and release ownership (don't let your pets manage your cupboard!)
-	;Note: There is a vanilla bug where items taken by followers are sometimes marked as stolen
-	;Debug.Trace("Dropping Base " + akBaseItem + " (" + aiItemCount + ")")
-	ObjectReference DroppedItem = ThisActor.DropObject(akBaseItem, aiItemCount)
-	if (DroppedItem && DroppedItem.GetActorOwner() == ThisActor.GetActorBase())
-		DroppedItem.SetActorOwner(None)
-	endif
-endEvent
-
+;================
+;Manual State Management
+;================
 event OnActivate(ObjectReference akActivator)
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
@@ -105,6 +91,36 @@ event OnActivate(ObjectReference akActivator)
 	endif
 endEvent
 
+;================
+;Automatic State Management
+;================
+event OnCombatStateChanged(Actor akTarget, int aeCombatState)
+	;HACK Begin registering combat check to fix getting stuck in combat (bug in bleedouts for animals)
+	;This should be bloat-friendly as it will never fire more than once at a time, even if OnCombatStateChanged is called multiple times in this time frame
+	if (aeCombatState == 1)
+		RegisterForSingleUpdate(CombatWaitUpdateTime)
+	endif
+endEvent
+
+;================
+;Item Management
+;================
+event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
+	Actor ThisActor = (Self as ObjectReference) as Actor
+
+	;Immediately drop it and release ownership (don't let your pets manage your cupboard!)
+	;Note: There is a vanilla bug where items taken by followers are sometimes marked as stolen
+	;Debug.Trace("Dropping Base " + akBaseItem + " (" + aiItemCount + ")")
+	ObjectReference DroppedItem = ThisActor.DropObject(akBaseItem, aiItemCount)
+	if (DroppedItem && DroppedItem.GetActorOwner() == ThisActor.GetActorBase())
+		DroppedItem.SetActorOwner(None)
+	endif
+endEvent
+
+;================
+;OnUpdate Loop - Animal Bleedout Fix
+;Note: We use continual SingleUpdate registrations to avoid issues listed here: https://www.creationkit.com/index.php?title=RegisterForUpdate_-_Form#Important_Warning
+;================
 event OnUpdate()
 	Actor ThisActor = (Self as ObjectReference) as Actor
 	if (!ThisActor)
