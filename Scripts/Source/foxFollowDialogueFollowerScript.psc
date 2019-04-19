@@ -53,7 +53,6 @@ GlobalVariable Property GlobalAdjMagicka Auto
 int Property foxFollowVer Auto
 int Property foxFollowScriptVer = 1 AutoReadOnly
 
-float Property WaitAroundForPlayerGameTime = 72.0 AutoReadOnly
 float Property InitialUpdateTime = 2.0 AutoReadOnly
 float Property DialogWaitGameTime = 0.1 AutoReadOnly
 
@@ -234,6 +233,7 @@ endFunction
 ;Hotkeys
 ;================
 ;Handle any desired hotkeys - currently just Sprint for CommandMode
+;We do this as either IsKeyPressed or GetMappedKey doesn't seem to catch gamepads
 event OnControlDown(string control)
 	;DebugControlDown(control)
 	RequestCommandMode = true
@@ -417,11 +417,6 @@ function ClearPreferredFollowerAlias(bool isFollower, Actor FollowerActor = None
 	endif
 endFunction
 
-;Are we the probable target for follow / wait / dismiss? (e.g. recently in dialogue with player, recently interacted with... any clues)
-bool function MeetsPreferredFollowerAliasConditions(Actor FollowerActor)
-	return FollowerActor.IsInDialogueWithPlayer() || FollowerActor.IsDoingFavor()
-endFunction
-
 ;================
 ;Follower Type/Count Management
 ;================
@@ -471,7 +466,9 @@ endFunction
 ;================
 ;Check if we desire CommandMode (currently just holding Sprint key)
 bool function RequestingCommandMode()
-	return RequestCommandMode
+	;Also check IsKeyPressed manually in case we've just pressed the key and we're ahead of our OnControlDown event
+	;IsKeyPressed doesn't seem to catch gamepads (thus the OnControlDown event), but this will still help twitchy keyboard users :)
+	return RequestCommandMode || Input.IsKeyPressed(Input.GetMappedKey("Sprint"))
 endFunction
 
 ;Set CommandMode - for now, CommandMode > 0 means command all followers
@@ -499,13 +496,13 @@ bool function ClearCommandMode()
 	endif
 
 	Actor FollowerActor = GetPreferredFollowerActorReference(true)
-	if (FollowerActor && MeetsPreferredFollowerAliasConditions(FollowerActor))
+	if (FollowerActor && IsInteractingWithPlayer(FollowerActor))
 		;Debug.Trace("foxFollow ClearCommandMode waiting for Follower...")
 		ClearCommandModeNextUpdate = false
 		return false
 	endif
 	FollowerActor = GetPreferredFollowerActorReference(false)
-	if (FollowerActor && MeetsPreferredFollowerAliasConditions(FollowerActor))
+	if (FollowerActor && IsInteractingWithPlayer(FollowerActor))
 		;Debug.Trace("foxFollow ClearCommandMode waiting for Animal...")
 		ClearCommandModeNextUpdate = false
 		return false
@@ -521,6 +518,9 @@ bool function ClearCommandMode()
 	CommandMode = 0
 	ClearCommandModeNextUpdate = false
 	return true
+endFunction
+bool function IsInteractingWithPlayer(Actor FollowerActor)
+	return FollowerActor.IsInDialogueWithPlayer() || FollowerActor.IsDoingFavor()
 endFunction
 
 ;Periodically ClearCommandMode
@@ -638,15 +638,13 @@ function FollowerMultiFollowWait(ReferenceAlias FollowerAlias, bool isFollower, 
 		return
 	endif
 
+	;Note: FollowerAlias now just entirely handles WaitAroundForPlayerGameTime update based on vanilla-style OnUnload event
 	(FollowerAlias.GetReference() as Actor).SetActorValue("WaitingForPlayer", mode)
-	if (mode > 0)
-		;SetObjectiveDisplayed(10, abforce = true)
-		FollowerAlias.RegisterForSingleUpdateGameTime(WaitAroundForPlayerGameTime)
-	else
-		;SetObjectiveDisplayed(10, abdisplayed = false)
-		FollowerAlias.UnRegisterForUpdateGameTime()
-		FollowerAlias.RegisterForSingleUpdate(InitialUpdateTime) ;Not required, but doesn't hurt
-	endif
+	;if (mode > 0)
+	;	SetObjectiveDisplayed(10, abforce = true)
+	;else
+	;	SetObjectiveDisplayed(10, abdisplayed = false)
+	;endif
 endFunction
 
 ;Version of DismissFollower that handles multiple followers
@@ -696,11 +694,10 @@ function DismissMultiFollower(ReferenceAlias FollowerAlias, bool isFollower, int
 
 	;If we don't exist or we're dead, time for express dismissal! Hiyaa1
 	Actor FollowerActor = FollowerAlias.GetReference() as Actor
-	if (!FollowerActor || FollowerActor.IsDead())
+	if (!FollowerActor)
 		;Fairly standard FollowerAliasScript.OnDeath / TrainedAnimalScript.OnDeath... More or less
-		if (FollowerActor)
-			FollowerActor.RemoveFromFaction(DialogueFollower.pCurrentHireling)
-		elseif (iMessage != -1)
+		;Well, sort of. We now handle the IsDead case through the normal dismissal logic, as FollowerActor is still valid, so we should clean up like normal
+		if (iMessage != -1)
 			Debug.MessageBox("Can't dismiss None Actor! Oops\nClearing follower alias anyway...\nIsFollower: " + isFollower)
 		endif
 		DismissMultiFollowerClearAlias(FollowerAlias, FollowerActor, iMessage)

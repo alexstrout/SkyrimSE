@@ -20,8 +20,12 @@ bool GlobTeleport
 float GlobMaxDist
 bool GlobAdjMagicka
 
+float Property WaitAroundForPlayerGameTime = 72.0 AutoReadOnly
 float Property CombatWaitUpdateTime = 12.0 AutoReadOnly
 float Property FollowUpdateTime = 4.5 AutoReadOnly
+
+float Property TeleportDist = -512.0 AutoReadOnly
+float Property TeleportMinMaxAngle = 30.0 AutoReadOnly
 
 ;================
 ;Variable Management
@@ -50,10 +54,7 @@ event OnActivate(ObjectReference akActivator)
 	;Debug.Trace("foxFollowActor - activated! :|")
 	if (akActivator == PlayerRef)
 		;Debug.Trace("foxFollowActor - activated by Player! :D")
-		DialogueFollower.CheckForModUpdate()
-		DialogueFollower.UpdateFollowerCount()
-
-		;Set CommandMode based on hotkey being held down
+		;Set CommandMode based on hotkey being held down - do this first so it's as responsive as possible
 		int commandMode = 0
 		if (DialogueFollower.RequestingCommandMode())
 			commandMode = 1
@@ -61,11 +62,15 @@ event OnActivate(ObjectReference akActivator)
 		endif
 		DialogueFollower.SetCommandMode(commandMode)
 
-		;Set ourself as the preferred follower until we've quit gabbing
-		;CommandMode will also stay valid during this time, until either consumed by a command or cleared by ClearCommandMode
+		;Check for mod update, and re-tally our followers (and update our GV cache, which is also applied to all followers)
+		DialogueFollower.CheckForModUpdate()
+		DialogueFollower.UpdateFollowerCount()
+
+		;Set ourself as the preferred follower
+		;CommandMode will also stay valid the whole time we're in dialogue, until either consumed by a command or cleared on DialogueFollower update by ClearCommandMode
 		Actor ThisActor = Self.GetReference() as Actor
-		SetMinMagicka(ThisActor, FollowerAdjMagickaCost)
 		DialogueFollower.SetPreferredFollowerAlias(ThisActor)
+		SetMinMagicka(ThisActor, FollowerAdjMagickaCost)
 
 		;Finally, make sure our OnUpdate is alive, just in case - use slower interval, since we're just beginning dialogue and will probably be near player for a bit
 		SetSpeedup(ThisActor, false) ;We should probably immediately stop zooming around too
@@ -100,9 +105,14 @@ event OnUnload()
 	endif
 
 	;Per Vanilla - "if follower unloads while waiting for the player, wait three days then dismiss him"
+	;We're actually instead gonna just register our WaitAroundForPlayerGameTime here - no reason follower should wander off if they're still loaded
 	if (ThisActor.GetActorValue("WaitingForPlayer") == 1)
-		DialogueFollower.FollowerMultiFollowWait(Self, DialogueFollower.IsFollower(ThisActor), 1)
+		;DialogueFollower.FollowerMultiFollowWait(Self, DialogueFollower.IsFollower(ThisActor), 1)
+		RegisterForSingleUpdateGameTime(WaitAroundForPlayerGameTime)
 	endif
+endEvent
+event OnLoad()
+	UnRegisterForUpdateGameTime()
 endEvent
 
 ;Dismiss follower if in combat with player, like vanilla behavior
@@ -314,7 +324,7 @@ event OnUpdate()
 		float maxDist = GlobMaxDist ;4096.0
 		;Note: They may starve other scripts of LOS picks if we have many followers - see https://www.creationkit.com/index.php?title=RegisterForLOS_-_Form
 		;However, as we're doing this on a fairly forviging interval (and not registering for LOS events), I think this should be OK
-		if (!PlayerRef.HasLOS(ThisActor))
+		if (dist < maxDist && !PlayerRef.HasLOS(ThisActor))
 			maxDist *= 0.5
 		endif
 		float dist = ThisActor.GetDistance(PlayerRef)
@@ -324,13 +334,17 @@ event OnUpdate()
 			;Where's Unreal's LastAnchor property when you need it? :|
 			;Teleporting 32 units above player allows some leeway with slopes while preventing too many falling noises
 			;Turns out a simple Disable/Enable does the trick - d'oh!
-			float aZ = PlayerRef.GetAngleZ()
-			ThisActor.Disable(false)
-			ThisActor.MoveTo(PlayerRef, -192.0 * Math.Sin(aZ), -192.0 * Math.Cos(aZ), 32.0, true)
-			ThisActor.Enable(true)
-			ThisActor.EvaluatePackage()
-			SetSpeedup(ThisActor, false)
 			;Debug.Trace("foxFollowActor - initiating hyperjump!")
+			SetSpeedup(ThisActor, false)
+			ThisActor.Disable(true)
+
+			;Check dist again, and only actually teleport if we're still out of range after the fadeout
+			if (ThisActor.GetDistance(PlayerRef) > maxDist)
+				float aZ = PlayerRef.GetAngleZ() + Utility.RandomFloat(-TeleportMinMaxAngle, TeleportMinMaxAngle)
+				ThisActor.MoveTo(PlayerRef, TeleportDist * Math.Sin(aZ), TeleportDist * Math.Cos(aZ), 0.0, true)
+			endif
+			ThisActor.EnableNoWait(true)
+			ThisActor.EvaluatePackage()
 		else
 			SetSpeedup(ThisActor, dist > maxDist * 0.5)
 		endif
