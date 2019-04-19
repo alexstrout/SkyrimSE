@@ -8,26 +8,30 @@ As it would not rely on SKSE64, it should be compatible with all platforms.[/b]
 
 [h1]Additional Information[/h1]
 Tweaks the following GMSTs:
-[list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0000 -> 0.2500
-[*][b]fBumpReactionSmallWaitTimer[/b]: 3.0000 -> 0.7500
+[list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0 -> 0.25
+[*][b]fBumpReactionSmallWaitTimer[/b]: 3.0 -> 0.75
 	More responsive "move away" behavior when bumping into AI
-[*][b]fFollowerSpacingAtDoors[/b]: 200.0000 -> 96.0000
-[*][b]fFollowMatchSpeedZoneWidth[/b]: 128.0000 -> 384.0000
-[*][b]fFollowSlowdownZoneWidth[/b]: 150.0000 -> 96.0000
-	Smoother close-range following (e.g. when walking)
-[*][b]fFollowSpaceBetweenFollowers[/b]: 192.0000 -> 96.0000
+[*][b]fAIMoveDistanceToRecalcFollowPath: 300.0 -> 64.0
+[*][b]fFollowRunMaxSpeedupMultiplier[/b]: 1.25 -> 1.5
+[*][b]fFollowRunMinSlowdownMultiplier[/b]: 0.75 -> 0.5
+[*][b]fFollowStartSprintDistance[/b]: 500.0 -> 512.0
+[*][b]fFollowWalkMinSlowdownMultiplier[/b]: 0.75 -> 0.5
+	Smoother following at all ranges, particularly when walking
+[*][b]fFollowMatchSpeedZoneWidth[/b]: 128.0 -> 1024.0
+[*][b]fFollowSlowdownZoneWidth[/b]: 150.0 -> 128.0
+	Helps prevent followers from crashing into you at extreme speeds
+[*][b]fFollowerSpacingAtDoors[/b]: 200.0 -> 64.0
+[*][b]fFollowSpaceBetweenFollowers[/b]: 192.0 -> 0.0
 	Much smoother following with 2 or more followers
-[*][b]fFollowStartSprintDistance[/b]: 500.0000 -> 384.0000
-[*][b]fSummonedCreatureMaxFollowDist[/b]: 400.0000 -> 320.0000
-[*][b]fSummonedCreatureMinFollowDist[/b]: 250.0000 -> 192.0000
-	Matches new PlayerFollwerPackage ranges below
+[*][b]fSummonedCreatureMaxFollowDist[/b]: 400.0 -> 512.0
+[*][b]fSummonedCreatureMinFollowDist[/b]: 250.0 -> 256.0
+	Match new PlayerFollwerPackage ranges below
 [*][b]iNumberActorsAllowedToFollowPlayer[/b]: 6 -> 14
 	Unsure, but MFSTL does allow 10 followers instead of 2, so bumped up by 8[/list]
 
 Also tweaks PlayerFollowerPackage:
-[list][*][b]Min Radius[/b]: 256.0000 -> 192.0000
-[*][b]Max Radius[/b]: 384.0000 -> 320.0000
-	Tighter following behavior[/list]
+[list][*][b]Max Radius[/b]: 384.0000 -> 512.0000
+	Smoother following behavior (when combined with above)[/list]
 
 The above tweaks primarily apply to recruited followers, and may or may not apply to quest followers on a case-by-case basis (they typically use all sorts of different AI packages).
 
