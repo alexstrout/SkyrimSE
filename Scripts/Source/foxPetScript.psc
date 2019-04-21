@@ -73,6 +73,7 @@ event OnActivate(ObjectReference akActivator)
 
 	;Normally, we don't show a trade dialogue, so make sure we grab any stray arrows etc. that may be in pet's inventory
 	;This should be unnecessary as we immediately drop any added item - but we'll still do this just in case it's a really old save etc.
+	;Actually, this is still useful for Ammo - we no longer immediately drop that, so we aren't littering the battlefield with objects as we get shot
 	ThisActor.RemoveAllItems(PlayerRef, false, true)
 
 	;If we're in dialoue somehow, do nothing - may allow better compatibility with follower frameworks, etc.
@@ -107,6 +108,11 @@ endEvent
 ;================
 event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	Actor ThisActor = (Self as ObjectReference) as Actor
+
+	;If we're an incoming projectile, do nothing (these will be transferred to player next OnActivate)
+	if (akBaseItem as Ammo)
+		return
+	endif
 
 	;Immediately drop it and release ownership (don't let your pets manage your cupboard!)
 	;Note: There is a vanilla bug where items taken by followers are sometimes marked as stolen
