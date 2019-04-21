@@ -22,7 +22,7 @@ bool GlobAdjMagicka
 
 float Property WaitAroundForPlayerGameTime = 72.0 AutoReadOnly
 float Property CombatWaitUpdateTime = 12.0 AutoReadOnly
-float Property FollowUpdateTime = 4.5 AutoReadOnly
+float Property FollowUpdateTime = 4.0 AutoReadOnly
 
 float Property TeleportDist = -512.0 AutoReadOnly
 float Property TeleportMinMaxAngle = 30.0 AutoReadOnly
@@ -335,8 +335,8 @@ event OnUpdate()
 			;Teleporting 32 units above player allows some leeway with slopes while preventing too many falling noises
 			;Turns out a simple Disable/Enable does the trick - d'oh!
 			;Debug.Trace("foxFollowActor - initiating hyperjump!")
-			SetSpeedup(ThisActor, false)
 			ThisActor.Disable(true)
+			SetSpeedup(ThisActor, false)
 
 			;Check dist again, and only actually teleport if we're still out of range after the fadeout
 			if (ThisActor.GetDistance(PlayerRef) > maxDist)
@@ -365,8 +365,8 @@ function SetSpeedup(Actor ThisActor, bool punchIt)
 			return
 		endif
 
-		FollowerAdjSpeedMult += 100
 		ThisActor.ModActorValue("SpeedMult", 100.0)
+		FollowerAdjSpeedMult += 100
 		ApplySpeedMult(ThisActor)
 		;Debug.Trace("foxFollowActor - initiating warp speed... Mach " + FollowerAdjSpeedMult)
 	elseif (FollowerAdjSpeedMult)
@@ -378,7 +378,6 @@ function SetSpeedup(Actor ThisActor, bool punchIt)
 endFunction
 function ApplySpeedMult(Actor ThisActor)
 	;CarryWeight must be adjusted for SpeedMult to apply
-	float wt = ThisActor.GetBaseActorValue("CarryWeight")
-	ThisActor.SetActorValue("CarryWeight", wt + 1.0)
-	ThisActor.SetActorValue("CarryWeight", wt)
+	ThisActor.ModActorValue("CarryWeight", 1.0)
+	ThisActor.ModActorValue("CarryWeight", -1.0)
 endFunction
