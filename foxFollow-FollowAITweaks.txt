@@ -11,21 +11,26 @@ Tweaks the following GMSTs:
 [list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0 -> 0.25
 [*][b]fBumpReactionSmallWaitTimer[/b]: 3.0 -> 0.75
 	More responsive "move away" behavior when bumping into AI
+
 [*][b]fAIMoveDistanceToRecalcFollowPath: 300.0 -> 64.0
 [*][b]fFollowRunMaxSpeedupMultiplier[/b]: 1.25 -> 1.5
 [*][b]fFollowRunMinSlowdownMultiplier[/b]: 0.75 -> 0.5
 [*][b]fFollowStartSprintDistance[/b]: 500.0 -> 512.0
 [*][b]fFollowWalkMinSlowdownMultiplier[/b]: 0.75 -> 0.5
 	Smoother following at all ranges, particularly when walking
+
 [*][b]fFollowMatchSpeedZoneWidth[/b]: 128.0 -> 1024.0
 [*][b]fFollowSlowdownZoneWidth[/b]: 150.0 -> 128.0
 	Helps prevent followers from crashing into you at extreme speeds
+
 [*][b]fFollowerSpacingAtDoors[/b]: 200.0 -> 64.0
 [*][b]fFollowSpaceBetweenFollowers[/b]: 192.0 -> 0.0
 	Much smoother following with 2 or more followers
+
 [*][b]fSummonedCreatureMaxFollowDist[/b]: 400.0 -> 512.0
 [*][b]fSummonedCreatureMinFollowDist[/b]: 250.0 -> 256.0
 	Match new PlayerFollwerPackage ranges below
+
 [*][b]iNumberActorsAllowedToFollowPlayer[/b]: 6 -> 14
 	Unsure, but MFSTL does allow 10 followers instead of 2, so bumped up by 8[/list]
 
@@ -43,6 +48,10 @@ Should be compatible with anything that doesn't also mess with follower AI.
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:
+r5:
+(changes downported from SE version)
+-- Major adjustments, with much smoother following (and less crashing into your horse)
+
 r4:
 -- Reverted [b]Maintain Speed at Goal[/b] in PlayerFollowerPackage back to False.
 

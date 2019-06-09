@@ -35,6 +35,11 @@ https://www.nexusmods.com/skyrim/mods/76776
 The bleedout state on animals is a little weird - since they have no bleedout animations, they will appear to just sit there in an idle combat state. However, they will eventually become active again, like normal followers.
 ------
 Revision History:
+r14:
+(changes downported from SE version)
+-- Improved script documentation
+-- Don't immediately drop projectiles we've just been shot with (these will instead fall back to old behavior of transferring to the player next time we chat, to keep inventory clean)
+
 r13:
 -- Fixed very minor script goof
 -- Set 1foxPetRace HP regen to playable races' default of 0.7
