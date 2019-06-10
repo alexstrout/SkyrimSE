@@ -1,38 +1,45 @@
-Simple Pet Fox - Kitt / Sola
+Simple Pet Fox - Kitt and Sola
 ------
 Adds Kitt and Sola, two simple pet foxes, to Dragonsreach.
+------
+Simply a port of my old (2012!) plugin from original Skyrim. Enjoy!
 
-[h1]Usage[/h1]
+[b]Original Non-SE Version - Steam Workshop (1.14.0)[/b]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=13413]https://steamcommunity.com/sharedfiles/filedetails/?id=13413[/url]
+
+[b]Usage[/b]
 Simply approach and talk to either fox, and they'll be recruited into your party.
 If you already have an animal following, that animal will be dismissed.
 Either fox will return to Dragonsreach when dismissed, and can be recruited again at any time.
 
-[h1]Additional Information[/h1]
+[b]Additional Information[/b]
 Both foxes level with the player to 50, like other vanilla followers.
 They otherwise have normal stats, but are marked as essential (bleedout state at 0 health).
 
 Kitt, the red fox, is the bolder of the two and tanks Dragons like a champ.
 Sola, the snow fox, is less aggressive, but possesses a snow fox's normal frost resistance.
 
-[h1]Compatibility[/h1]
+[b]Compatibility[/b]
 Should be compatible with just about anything, regardless of load order.
 Should work in any multi-follower mod that supports vanilla animal followers.
 
-[h1]Optional Plugins[/h1]
+[b]Optional Plugins[/b]
 By default, foxes have rather annoying idle breathing sounds, but can be silenced using this plugin:
-https://steamcommunity.com/sharedfiles/filedetails/?id=74276765
+(TODO link to follow!)
 
 To command both foxes at once (with catch-up / teleport functionality), try MFSTL:
-https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452
+(TODO link to follow!)
 (Note: Foxes can not learn spells - I couldn't figure out how to define animations to cast them!)
 
-[h1]Uninstall Steps[/h1]
+[b]Uninstall Steps[/b]
 Simply dismiss any fox present in your party, then remove the plugin as normal.
 Optionally, use ReSaver (or similar) to remove any leftover references in your save:
-https://www.nexusmods.com/skyrim/mods/76776
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
-[h1]Known Issues[/h1]
+[b]Known Issues[/b]
 The bleedout state on animals is a little weird - since they have no bleedout animations, they will appear to just sit there in an idle combat state. However, they will eventually become active again, like normal followers.
+
+Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently unsure why this happens, but it can be worked around by saving and restarting the game, after which they will appear as expected.
 ------
 Revision History:
 r14:
