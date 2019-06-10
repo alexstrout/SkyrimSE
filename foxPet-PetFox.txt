@@ -25,7 +25,7 @@ Should work in any multi-follower mod that supports vanilla animal followers.
 
 [b]Optional Plugins[/b]
 By default, foxes have rather annoying idle breathing sounds, but can be silenced using this plugin:
-(TODO link to follow!)
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/26454]https://www.nexusmods.com/skyrimspecialedition/mods/26454[/url]
 
 To command both foxes at once (with catch-up / teleport functionality), try MFSTL:
 (TODO link to follow!)
