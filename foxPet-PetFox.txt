@@ -28,7 +28,7 @@ By default, foxes have rather annoying idle breathing sounds, but can be silence
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26454]https://www.nexusmods.com/skyrimspecialedition/mods/26454[/url]
 
 To command both foxes at once (with catch-up / teleport functionality), try MFSTL:
-(TODO link to follow!)
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/26712]https://www.nexusmods.com/skyrimspecialedition/mods/26712[/url]
 (Note: Foxes can not learn spells - I couldn't figure out how to define animations to cast them!)
 
 [b]Uninstall Steps[/b]

@@ -11,6 +11,8 @@ Simply a port of my old (2012!) plugin from original Skyrim, included for comple
 Normally, Skyrim automatically aims your arrows toward enemies near your crosshair.
 This plugin simply sets the auto-aim angles for ranged weaponry to zero, so that arrows always shoot where you're actually aiming.
 
+[youtube]MM2LsmPZ54s[/youtube]
+
 [b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.
 
