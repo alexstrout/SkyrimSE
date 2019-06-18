@@ -1,33 +1,40 @@
 Spell: Write Spell Tome
 ------
 Implements the ability to write spell tomes from equipped spells in exchange for a Dragon Soul.
+------
+Simply a port of my 2018 plugin from original Skyrim. Enjoy!
 
-[h1][u]Skyrim Special Edition Note[/u][/h1]
-[b]This will eventually make its way to SSE - I'll update this section when it does!
-As it would require SKSE64, it would unfortunately be compatible with PC only.[/b]
+[b]Original Non-SE Version - Steam Workshop (1.0.0)[/b]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868]https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868[/url]
 
-[h1]Requirements[/h1]
-Requires SKSE: http://skse.silverlock.org/
+[b]Requirements[/b]
+Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
-[h1]Usage[/h1]
+[b]Usage[/b]
 Equip the Lesser Power "Write Spell Tome" in either hand, and a desired spell in the other hand.
 After casting, the spell tome teaching that spell (if one exists) will appear in your inventory.
 
 A Dragon Soul will be spent if a spell tome was successfully written; otherwise, nothing happens.
 
-[h1]Additional Information[/h1]
+[youtube]kNYIzrMZbwY[/youtube]
+
+[b]Additional Information[/b]
 Intended to be used with MFSTL to distribute otherwise unique, one-time spell tomes to followers:
-https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/26712]https://www.nexusmods.com/skyrimspecialedition/mods/26712[/url]
 
 However, this could just be used on its own if you otherwise had some use for writing spell tomes.
 
-[h1]Compatibility[/h1]
-Currently, only vanilla spell tomes are supported.
+[b]Compatibility[/b]
+Currently, only vanilla / DLC spell tomes are supported.
 For the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
 
-[h1]Uninstall Steps[/h1]
+[b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:
+1.1.0 (2019-06-18):
+-- Add DLC spells
+-- Add proper menu marker (d'oh!)
+
 r1:
 -- Initial release.
