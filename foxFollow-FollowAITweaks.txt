@@ -1,18 +1,19 @@
 Follower AI Tweaks
 ------
 Implements a number of tweaks to allow for smoother AI following in large groups.
+------
+Simply a port of my 2018 plugin from original Skyrim. Enjoy!
 
-[h1][u]Skyrim Special Edition Note[/u][/h1]
-[b]This will eventually make its way to SSE - I'll update this section when it does!
-As it would not rely on SKSE64, it should be compatible with all platforms.[/b]
+[b]Original Non-SE Version - Steam Workshop (1.4.0)[/b]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894]https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894[/url]
 
-[h1]Additional Information[/h1]
+[b]Additional Information[/b]
 Tweaks the following GMSTs:
 [list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0 -> 0.25
 [*][b]fBumpReactionSmallWaitTimer[/b]: 3.0 -> 0.75
 	More responsive "move away" behavior when bumping into AI
 
-[*][b]fAIMoveDistanceToRecalcFollowPath: 300.0 -> 64.0
+[*][b]fAIMoveDistanceToRecalcFollowPath[/b]: 300.0 -> 64.0
 [*][b]fFollowRunMaxSpeedupMultiplier[/b]: 1.25 -> 1.5
 [*][b]fFollowRunMinSlowdownMultiplier[/b]: 0.75 -> 0.5
 [*][b]fFollowStartSprintDistance[/b]: 500.0 -> 512.0
@@ -40,11 +41,12 @@ Also tweaks PlayerFollowerPackage:
 
 The above tweaks primarily apply to recruited followers, and may or may not apply to quest followers on a case-by-case basis (they typically use all sorts of different AI packages).
 
-[h1]Compatibility[/h1]
-Should be compatible with anything that doesn't also mess with follower AI.
-(Specifically, anything that doesn't modify the above GMSTs or PlayerFollowerPackage)
+[b]Compatibility[/b]
+Should be compatible with anything that doesn't also tweak the above GMSTs or PlayerFollowerPackage.
+Should work in any multi-follower mod that uses (but doesn't alter) PlayerFollowerPackage.
+However, in case of conflict, whichever is loaded later (below) will simply take precedence.
 
-[h1]Uninstall Steps[/h1]
+[b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:
