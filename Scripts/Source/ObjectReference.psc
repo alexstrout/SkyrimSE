@@ -1,5 +1,5 @@
 Scriptname ObjectReference extends Form Hidden
-{fox: Brutal harvest fix lines 618-630 - based on SKSE 2.00.16}
+{fox: Brutal harvest fix lines 609, 611, 620 - based on SKSE 2.00.16}
 bool FUNCTION rampRumble(float power = 0.5, float duration = 0.25, float falloff = 1600.0)
 	; Function to shake cam/controller based on distance from player
 	; should always be called on the source of the rumble, 
@@ -606,7 +606,9 @@ bool Function IsInLocation(Location akLocation)
 endFunction
 
 ; Event received when this reference is activated
+float foxHarvestFixLastActivateTime ;Simple variable to store our last harvest time, can be left at default init value (0) - save-friendly on addition or removal, see https://www.creationkit.com/index.php?title=Save_Files_Notes_(Papyrus)#Properties_and_Script_Variables
 Event OnActivate(ObjectReference akActionRef)
+	foxHarvestFixLastActivateTime = foxHarvestFix.OnActivate(Self, foxHarvestFixLastActivateTime) ;Hook OnActivate here if we'd like to track last harvest time (so that plants don't respawn until X days later)
 EndEvent
 
 ; Event received when this object has moved to an attached cell from a detached one
@@ -615,19 +617,7 @@ EndEvent
 
 ; Event received when this object's parent cell is attached
 Event OnCellAttach()
-	;fox: Brutal harvest fix here - don't try this at home!
-	;Note: There is a weird issue where some ObjectReferences are apparently invalid and can't call methods on themselves - I don't know why (or how) this happens
-	;Despite checking Self, the IsHarvested() call can still fail. As this would otherwise be an empty call anyway, this appears harmless (other than printing an error to log)
-	if (Self && Self.IsHarvested())
-		;Unfortunately, SetHarvested seems to have an upper limit (10?) on how many meshes it can update at once
-		;Disable/enable works fine, but having to disable/enable parent objects (e.g. all of Breezehome) is a bit awkward with Havoc objects flying about
-		;However, we can nicely sidestep this with a quasi-unique wait time based on our Reference FormID (clamped to some reasonable time)
-		;We can avoid deriving too many overlapping wait times (or too long of a wait time) by wrapping on some number via modulus
-		;Absolute worst case, we miss a plant or two - I think this is an acceptable tradeoff for its simplicity and speed
-		;Debug.Trace(Self + " FormID " + Self.GetFormID() + " was harvested OnCellAttach (" + Self.GetBaseObject().GetName() + ")")
-		Utility.Wait((Math.abs(Self.GetFormID()) as int % 2048) / 1000.0) ;Wrap on 0x7FF (2048 possible values) so we have sufficient distribution for a max 2s wait time
-		Self.SetHarvested(false)
-	endif
+	foxHarvestFix.OnCellAttach(Self, foxHarvestFixLastActivateTime) ;Hook OnCellAttach here to actually apply the fix, conditionally based on afLastActivateTime if provided (optional)
 EndEvent
 
 ; Event received when this object's parent cell is detached
