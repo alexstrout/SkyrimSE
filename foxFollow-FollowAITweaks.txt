@@ -50,6 +50,9 @@ However, in case of conflict, whichever is loaded later (below) will simply take
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:
+1.4.1 (2019-06-24):
+Fixed issue with bad FormIDs, due to adding additional Game Setting (GMST) records to the ESL-ified plugin without running "Compact Active File Form IDs" again (oops!). The OG Skyrim 1.4.0 version on Steam Workshop was not affected by this issue.
+
 r5:
 (changes downported from SE version)
 -- Major adjustments, with much smoother following (and less crashing into your horse)
