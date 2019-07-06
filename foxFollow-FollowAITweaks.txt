@@ -42,9 +42,9 @@ Also tweaks PlayerFollowerPackage:
 The above tweaks primarily apply to recruited followers, and may or may not apply to quest followers on a case-by-case basis (they typically use all sorts of different AI packages).
 
 [b]Compatibility[/b]
-Should be compatible with anything that doesn't also tweak the above GMSTs or PlayerFollowerPackage.
-Should work in any multi-follower mod that uses (but doesn't alter) PlayerFollowerPackage.
-However, in case of conflict, whichever is loaded later (below) will simply take precedence.
+Should be compatible with anything that doesn't also tweak the above values.
+Should work in any multi-follower mod (though it may have a reduced effect, depending on the mod).
+If unsure, simply load this first, and whatever is loaded later will take precedence.
 
 [b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.

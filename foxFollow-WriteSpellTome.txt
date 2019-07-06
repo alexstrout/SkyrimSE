@@ -26,7 +26,8 @@ However, this could just be used on its own if you otherwise had some use for wr
 
 [b]Compatibility[/b]
 Currently, only vanilla / DLC spell tomes are supported.
-For the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
+However, for the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
+Simply add any spell tomes you'd like this mod to support to this list.
 
 [b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.
