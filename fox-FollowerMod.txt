@@ -53,7 +53,7 @@ Should be compatible with anything that isn't also a follower overhaul. :P
 By default, 2 or more followers yields derpy follower AI, which can be mitigated using this plugin:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26737]https://www.nexusmods.com/skyrimspecialedition/mods/26737[/url]
 
-It is also possible to write spell tomes from (vanilla) equipped spells using this plugin:
+It is also possible to write spell tomes from (most) equipped spells using this plugin:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26738]https://www.nexusmods.com/skyrimspecialedition/mods/26738[/url]
 
 [b]Uninstall Steps[/b]

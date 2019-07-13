@@ -2,7 +2,7 @@ Spell: Write Spell Tome
 ------
 Implements the ability to write spell tomes from equipped spells in exchange for a Dragon Soul.
 ------
-Simply a port of my 2018 plugin from original Skyrim. Enjoy!
+Simply a port of my 2018 plugin from original Skyrim, now with some enhanced features. Enjoy!
 
 [b]Original Non-SE Version - Steam Workshop (1.0.0)[/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868]https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868[/url]
@@ -13,6 +13,8 @@ Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/u
 [b]Usage[/b]
 Equip the Lesser Power "Write Spell Tome" in either hand, and a desired spell in the other hand.
 After casting, the spell tome teaching that spell (if one exists) will appear in your inventory.
+
+To write dual-cast-only spells (e.g. Master spells), equip them within 5 seconds of casting.
 
 A Dragon Soul will be spent if a spell tome was successfully written; otherwise, nothing happens.
 
@@ -25,14 +27,29 @@ Intended to be used with MFSTL to distribute otherwise unique, one-time spell to
 However, this could just be used on its own if you otherwise had some use for writing spell tomes.
 
 [b]Compatibility[/b]
-Currently, only vanilla / DLC spell tomes are supported.
-However, for the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
-Simply add any spell tomes you'd like this mod to support to this list.
+Compatible with all vanilla / DLC spell tomes.
+Compatible with any spell mod that adds spell tomes to vendor "LItemSpellTomesXXSchool" lists.
+(This likely includes any popular spell mod.)
+
+For the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
+If a particular spell tome isn't being found by the mod, try adding it to this list in a patch.
+[i]However, please remake any 1.x.x compatibility patches you may have made.[/i]
 
 [b]Uninstall Steps[/b]
-Simply remove the plugin as normal; no save cleaning necessary.
+Simply unequip Write Spell Tome (if equipped), then remove the plugin as normal.
+Optionally, use ReSaver (or similar) to remove any leftover references in your save:
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
+
+[b]Known Issues[/b]
+Parsing "LItemSpellTomesXXSchool" lists may not work if a mod adds any spell tome that doesn't belong to that school.
+Unfortunately, this is a necessary constraint for proper performance when iterating (potentially very large) lists of spell tomes.
 ------
 Revision History:
+2.0.0 (2019-07-13):
+-- Major rewrite - significantly increased performance and compatibility via spell tome vendor LeveledItem list iteration (IMPORTANT NOTE: Any compatibility patches that alter "1foxFollowSpellTomeList" should be remade - there's a chance they won't even be needed now)
+-- Add support for dual-cast-only spells by waiting at least 5 seconds, after which your most recently equipped spell will be used
+-- Add more verbose in-game notifications for when a suitable spell tome can't be found, or when simply out of Dragon Souls
+
 1.1.0 (2019-06-18):
 -- Add DLC spells
 -- Add proper menu marker (d'oh!)
