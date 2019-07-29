@@ -8,9 +8,6 @@ These files should actually work in original Skyrim as-is.
 [b]Requirements[/b]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
-[b]Usage[/b]
-Just harvest plants as usual.
-
 [b]Additional Information[/b]
 Skyrim has an annoying bug where harvested plants don't respawn when loading a save game.
 This is covered in great detail on the following mod pages:
@@ -28,24 +25,25 @@ The inserted calls first check SKSE's native IsHarvested function to see if any 
 This has some advantages:
 [list][*]It is universally compatible with any harvestable object in the game, vanilla or modded.
 [*]It is retroactive on existing saves, and may also be safely uninstalled at any time.
-[*]It is lightweight, with any reference's OnCellAttach hook only firing once per save load.
-[*]It is bloat-friendly, as it does not register any references for any additional events.
+[*]It is efficient, with any reference's OnCellAttach hook only firing once per save load.
+[*]It is lightweight, making no permanent changes to references or adding any event registrations.
 [*]Like other harvest fixes, it decouples harvest respawning from cell resets.[/list]
 
 And also some disadvantages:
-[list][*]It only applies after a cell change (due to the nature of the OnCellAttach event).
-[*]It adds a (negligible?) script overhead to the otherwise empty hooked events in ObjectReference.
-[*]It would need to be updated if SKSE's ObjectReference.pex script ever changes (it hasn't in years).
-[*]The OnCellAttach hook can fail on references with null forms, dumping an error to Papyrus log.
+[list][*]It only applies after a cell change (due to the scope of available events to the script).
+[*]It adds a (negligible?) script overhead to the otherwise empty hooked events.
+[*]It would need an update if SKSE's ObjectReference.pex script ever changes (it hasn't in years).
+[*]The OnCellAttach hook can fail on references to null forms, dumping an error to Papyrus log.
 	(This seems harmless as the default OnCellAttach event would otherwise be empty anyway)
 [*]In certain rare cases, it's possible to miss updating a reference's mesh (see [url=https://www.nexusmods.com/skyrimspecialedition/articles/1287]script source[/url]).
-[*]It's still not as clean as a native SKSE plugin could be...[/list]
+[*]It's still not as clean as a native SKSE plugin could be. :P[/list]
 
 Respawn time (def. 3 days) may be changed via editing foxHarvestFix.psc and recompiling the script.
-(Sorry this isn't easier! Trying to support adjusting this in-game felt a little too complicated)
+(Sorry this isn't easier! It's tricky to make a global variable directly available to the script)
 
 [b]Compatibility[/b]
 Should be compatible with anything that doesn't also replace SKSE's ObjectReference.pex script.
+Technically compatible with other harvest fixes? But flora/fauna may respawn sooner than desired.
 
 [b]Uninstall Steps[/b]
 Simply replace the following with SKSE's original files:
