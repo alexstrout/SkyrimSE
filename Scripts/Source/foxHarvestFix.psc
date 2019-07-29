@@ -6,8 +6,8 @@ bool function IsValidHarvestRef(ObjectReference akRef, float afLastActivateTime)
 	;As IsHarvested is implemented for all ObjectReference types (hence "hooking" ObjectReference), we can simply call this function to determine if we:
 	;	A) Are a valid plant (e.g. Flora / TreeObject reference, or anything else that supports IsHarvested)
 	;	B) Have actually been harvested (no point in caring if we haven't!)
-	;Note: There is a weird issue where some ObjectReferences are apparently invalid and can't call methods on themselves - I don't know why (or how) this happens
-	;Despite checking akRef, the IsHarvested() call can still fail. As our "hooked" functions would otherwise be empty calls anyway, this appears harmless (other than printing an error to log)
+	;Note: There is a weird issue where some ObjectReferences are apparently invalid nullptr forms and can't call native methods on themselves
+	;Thus, despite checking akRef, the IsHarvested() call can still fail. As our "hooked" functions would otherwise be empty calls anyway, this appears harmless (other than printing an error to log)
 	return akRef && akRef.IsHarvested() \
 		&& (afLastActivateTime <= 0.0 || Utility.GetCurrentGameTime() > afLastActivateTime + 3.0) ;Adjust the "3.0" here to your desired respawn time in days (e.g. 3.0 = 3 days, 0.125 = 3 hours)
 endFunction
