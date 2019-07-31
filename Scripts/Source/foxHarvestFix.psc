@@ -9,7 +9,7 @@ bool function IsValidHarvestRef(ObjectReference akRef, float afLastActivateTime)
 	;Note: There is a weird issue where some ObjectReferences are apparently invalid nullptr forms and can't call native methods on themselves
 	;Thus, despite checking akRef, the IsHarvested() call can still fail. As our "hooked" functions would otherwise be empty calls anyway, this appears harmless (other than printing an error to log)
 	return akRef && akRef.IsHarvested() \
-		&& (afLastActivateTime <= 0.0 || Utility.GetCurrentGameTime() > afLastActivateTime + 3.0) ;Adjust the "3.0" here to your desired respawn time in days (e.g. 3.0 = 3 days, 0.125 = 3 hours)
+		&& (afLastActivateTime <= 0.0 || Utility.GetCurrentGameTime() > afLastActivateTime + 10.0) ;Adjust this last number to your desired respawn time in days (e.g. 3.0 = 3 days, 0.125 = 3 hours)
 endFunction
 
 ;Process our OnActivate "hook" - our "foxHarvestFixLastActivateTime" in ObjectReference should both be passed as afLastActivateTime AND assigned the result of this function (so it may be updated)
@@ -28,10 +28,9 @@ function OnCellAttach(ObjectReference akRef, float afLastActivateTime = -1.0) gl
 		;Unfortunately, SetHarvested seems to have an upper limit (10?) on how many meshes it can update at once
 		;Disable/enable works fine, but having to disable/enable parent objects (e.g. all of Breezehome) is a bit awkward with Havoc objects flying about
 		;However, we can nicely sidestep this with a quasi-unique wait time based on our Reference FormID (clamped to some reasonable time)
-		;We can avoid deriving too many overlapping wait times (or too long of a wait time) by wrapping on some number via modulus
 		;Absolute worst case, we miss a plant or two - I think this is an acceptable tradeoff for its simplicity and speed
 		;Debug.Trace(akRef + " FormID " + akRef.GetFormID() + " was harvested OnCellAttach (" + akRef.GetBaseObject().GetName() + ")")
-		Utility.Wait((Math.abs(akRef.GetFormID()) as int % 2048) / 1000.0) ;Wrap on 0x7FF (2048 possible values) so we have sufficient distribution for a max 2s wait time
+		Utility.Wait(Math.abs((akRef.GetFormID() % 2048) / 640.0)) ;3.2s max wait time
 		akRef.SetHarvested(false)
 	endif
 endFunction
