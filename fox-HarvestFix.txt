@@ -19,7 +19,7 @@ Brutal Flora Harvest Fix takes a different approach - attaching a script "hook" 
 
 A modified ObjectReference script inserts a single function call into each of the following events:
 [list][*][b]OnActivate[/b] - to store our last harvest time (into a single new float value).
-[*][b]OnCellAttach[/b] - to fix any references last harvested more than 3 days ago.[/list]
+[*][b]OnCellAttach[/b] - to fix any references last harvested more than 10 days ago.[/list]
 The inserted calls first check SKSE's native IsHarvested function to see if any work is required.
 
 This has some advantages:
@@ -38,8 +38,9 @@ And also some disadvantages:
 [*]In certain rare cases, it's possible to miss updating a reference's mesh (see [url=https://www.nexusmods.com/skyrimspecialedition/articles/1287]script source[/url]).
 [*]It's still not as clean as a native SKSE plugin could be. :P[/list]
 
-Respawn time (def. 3 days) may be changed via editing foxHarvestFix.psc and recompiling the script.
-(Sorry this isn't easier! It's tricky to make a global variable directly available to the script)
+Defaults to a 10-day respawn time (Skyrim's default cell reset time).
+However, alternate 3-day, 30-day, and instant respawn time versions are included in the download.
+(Respawn time may be further customized via editing foxHarvestFix.psc and recompiling the script)
 
 [b]Compatibility[/b]
 Should be compatible with anything that doesn't also replace SKSE's ObjectReference.pex script.
@@ -56,5 +57,11 @@ And remove the following:
 Should be safe to uninstall from saves at any time; no save cleaning necessary.
 ------
 Revision History:
+1.1.0 (2019-07-31):
+-- Use 10-day default respawn time
+-- Add optional 3-day, 30-day, and instant respawn time versions (in a single zip)
+-- Spread out SetHarvested calls a little more, to further reduce the (rare) chance of not updating a plant mesh's harvest state
+-- Tiny optimization to fix the triple float-int-float cast on GetFormID when spreading out the SetHarvested calls (oops)
+
 1.0.0 (2019-07-28):
 -- Initial release.
