@@ -1,30 +1,6 @@
 ScriptName foxFollowDialogueFollowerScript extends Quest
 {Rewrite of DialogueFollowerScript with cool new stuff - see DialogueFollowerScript too, which had to stay the same name, and simply forwards its calls to us}
 
-;Begin Vanilla DialogueFollowerScript Members
-; GlobalVariable Property pPlayerFollowerCount Auto
-; GlobalVariable Property pPlayerAnimalCount Auto
-; ReferenceAlias Property pFollowerAlias Auto
-; ReferenceAlias property pAnimalAlias Auto
-; Faction Property pDismissedFollower Auto
-; Faction Property pCurrentHireling Auto
-; Message Property	FollowerDismissMessage Auto
-; Message Property AnimalDismissMessage Auto
-; Message Property	FollowerDismissMessageWedding Auto
-; Message Property	FollowerDismissMessageCompanions Auto
-; Message Property	FollowerDismissMessageCompanionsMale Auto
-; Message Property	FollowerDismissMessageCompanionsFemale Auto
-; Message Property	FollowerDismissMessageWait Auto
-; SetHirelingRehire Property HirelingRehireScript Auto
-;
-; ;Property to tell follower to say dismissal line
-; Int Property iFollowerDismiss Auto Conditional
-;
-; ; PATCH 1.9: 77615: remove unplayable hunting bow when follower is dismissed
-; Weapon Property FollowerHuntingBow Auto
-; Ammo Property FollowerIronArrow Auto
-;End Vanilla DialogueFollowerScript Members
-
 DialogueFollowerScript Property DialogueFollower Auto
 
 Actor Property PlayerRef Auto
@@ -39,6 +15,7 @@ ReferenceAlias Property FollowerAlias6 Auto
 ReferenceAlias Property FollowerAlias7 Auto
 ReferenceAlias Property FollowerAlias8 Auto
 ReferenceAlias Property FollowerAlias9 Auto
+ReferenceAlias Property PlayerAlias Auto
 
 Sound Property FollowerLearnSpellSound Auto
 Sound Property FollowerForgetSpellSound Auto
@@ -51,7 +28,7 @@ GlobalVariable Property GlobalMaxDist Auto
 GlobalVariable Property GlobalAdjMagicka Auto
 
 int Property foxFollowVer Auto
-int Property foxFollowScriptVer = 1 AutoReadOnly
+int Property foxFollowScriptVer = 2 AutoReadOnly
 
 float Property InitialUpdateTime = 2.0 AutoReadOnly
 float Property DialogWaitGameTime = 0.1 AutoReadOnly
@@ -141,7 +118,7 @@ event OnUpdate()
 endEvent
 
 ;See if we need to update from an old save (or first run from vanilla save)
-;Currently called on OnInit, SetMultiFollower, and any current followers' OnActivate
+;Currently called on OnInit, SetMultiFollower, any current followers' OnActivate, and PlayerAlias' OnPlayerLoadGame
 function CheckForModUpdate()
 	if (foxFollowVer < foxFollowScriptVer)
 		;Set foxFollowVer ASAP to avoid mod updates being run twice from two threads
@@ -152,11 +129,14 @@ function CheckForModUpdate()
 		if (ver < 1)
 			ModUpdate1()
 		endif
+		if (ver < 2)
+			ModUpdate2()
+		endif
 
 		;Ready to rock!
 		;Possibly display update message - will only be displayed on existing saves, foxFollowVer set to -1 on new game from DialogueFollowerScript
 		if (ver != -1)
-			Debug.MessageBox("foxFollow ready to roll!\nPrevious Version: " + ver + "\nNew Version: " + foxFollowScriptVer + "\n\nIf uninstalling mod later, please remember\nto dismiss all followers first. Thanks!")
+			Debug.MessageBox("foxFollow ready to roll!\nPrevious Script Version: " + ver + "\nNew Script Version: " + foxFollowScriptVer + "\n\nIf uninstalling mod later, please remember\nto dismiss all followers first. Thanks!")
 		endif
 	endif
 
@@ -228,6 +208,10 @@ function ModUpdate1()
 	DialogueFollower.pAnimalAlias.UnRegisterForUpdateGameTime()
 	DialogueFollower.pAnimalAlias.UnRegisterForUpdate()
 endFunction
+function ModUpdate2()
+	;PlayerAlias purposefully unfilled until we've been init (it ends up unfilled on existing saves anyway)
+	PlayerAlias.ForceRefTo(Game.GetPlayer())
+endFunction
 
 ;================
 ;Hotkeys
@@ -235,10 +219,12 @@ endFunction
 ;Handle any desired hotkeys - currently just Sprint for CommandMode
 ;We do this as either IsKeyPressed or GetMappedKey doesn't seem to catch gamepads
 event OnControlDown(string control)
+	;Debug.Trace("foxFollow OnControlDown " + control)
 	;DebugControlDown(control)
 	RequestCommandMode = true
 endEvent
 event OnControlUp(string control, float HoldTime)
+	;Debug.Trace("foxFollow OnControlUp " + control + " " + HoldTime)
 	;DebugControlUp(control, HoldTime)
 	RequestCommandMode = false
 endEvent
@@ -466,9 +452,7 @@ endFunction
 ;================
 ;Check if we desire CommandMode (currently just holding Sprint key)
 bool function RequestingCommandMode()
-	;Also check IsKeyPressed manually in case we've just pressed the key and we're ahead of our OnControlDown event
-	;IsKeyPressed doesn't seem to catch gamepads (thus the OnControlDown event), but this will still help twitchy keyboard users :)
-	return RequestCommandMode || Input.IsKeyPressed(Input.GetMappedKey("Sprint"))
+	return RequestCommandMode
 endFunction
 
 ;Set CommandMode - for now, CommandMode > 0 means command all followers
@@ -486,6 +470,11 @@ function SetCommandMode(int newCommandMode)
 		UnRegisterForUpdateGameTime()
 	endif
 endFunction
+event OnUpdateGameTime()
+	if (!ClearCommandMode())
+		RegisterForSingleUpdateGameTime(DialogWaitGameTime)
+	endif
+endEvent
 
 ;Clear CommandMode, as long as no followers are currently being commanded - returns true if cleared
 bool function ClearCommandMode()
@@ -522,13 +511,6 @@ endFunction
 bool function IsInteractingWithPlayer(Actor FollowerActor)
 	return FollowerActor.IsInDialogueWithPlayer() || FollowerActor.IsDoingFavor()
 endFunction
-
-;Periodically ClearCommandMode
-event OnUpdateGameTime()
-	if (!ClearCommandMode())
-		RegisterForSingleUpdateGameTime(DialogWaitGameTime)
-	endif
-endEvent
 
 ;================
 ;DialogueFollower Functions (Set / Follow / Wait / Dismiss)

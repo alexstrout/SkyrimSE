@@ -328,7 +328,7 @@ event OnUpdate()
 			maxDist *= 0.5
 		endif
 		float dist = ThisActor.GetDistance(PlayerRef)
-		if (GlobTeleport && dist > maxDist && !PlayerRef.IsOnMount())
+		if (GlobTeleport && dist > maxDist)
 			;Ideally, we'd teleport to the nearest nav node behind player, but that's not exposed to papyrus as far as I can tell
 			;However, if we teleport into the ground, Skyrim will eventually place us somewhere valid
 			;Where's Unreal's LastAnchor property when you need it? :|
