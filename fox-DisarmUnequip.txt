@@ -15,6 +15,7 @@ NPCs usually re-equip the "disarmed" weapons after the stagger, but sometimes th
 
 [b]Compatibility[/b]
 Should be compatible with anything that doesn't also mess with vanilla Disarm MGEFs.
+However, any mods that add Disarm effects will need to be patched to reflect these changes.
 
 [b]Uninstall Steps[/b]
 Simply remove the plugin as normal; no save cleaning necessary.
