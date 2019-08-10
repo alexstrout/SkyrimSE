@@ -22,6 +22,7 @@ Sound Property FollowerForgetSpellSound Auto
 Message Property FollowerLearnSpellMessage Auto
 Message Property FollowerForgetSpellMessage Auto
 Message Property FollowerCommandModeMessage Auto
+Message Property ScriptUpdateCompleteMessage Auto
 
 GlobalVariable Property GlobalTeleport Auto
 GlobalVariable Property GlobalMaxDist Auto
@@ -136,7 +137,7 @@ function CheckForModUpdate()
 		;Ready to rock!
 		;Possibly display update message - will only be displayed on existing saves, foxFollowVer set to -1 on new game from DialogueFollowerScript
 		if (ver != -1)
-			Debug.MessageBox("foxFollow ready to roll!\nPrevious Script Version: " + ver + "\nNew Script Version: " + foxFollowScriptVer + "\n\nIf uninstalling mod later, please remember\nto dismiss all followers first. Thanks!")
+			ScriptUpdateCompleteMessage.Show(ver, foxFollowScriptVer)
 		endif
 	endif
 
@@ -286,6 +287,11 @@ endFunction
 ;================
 ;Follower Alias Management (Various Gets)
 ;================
+;Get follower array length
+int function GetFollowersLength()
+	return Followers.Length
+endFunction
+
 ;Get follower alias at index
 ReferenceAlias function GetNthFollowerAlias(int i)
 	return Followers[i]

@@ -1,12 +1,6 @@
 Scriptname foxFollowFollowerAliasScript extends ReferenceAlias
 {Rewrite of FollowerAliasScript with rad new stuff - see DialogueFollowerScript too, which had to stay the same name}
 
-;Begin Vanilla FollowerAliasScript Members
-;DialogueFollowerScript Property DialogueFollower Auto
-;GlobalVariable Property PlayerFollowerCount  Auto
-;Faction Property CurrentHirelingFaction Auto
-;End Vanilla FollowerAliasScript Members
-
 foxFollowDialogueFollowerScript Property DialogueFollower Auto
 
 Actor Property PlayerRef Auto

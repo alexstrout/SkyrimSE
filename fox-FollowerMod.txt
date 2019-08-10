@@ -27,7 +27,7 @@ Fully supports animal followers too! (provided they use the vanilla DialogueFoll
 
 Catch-up / teleporting is automatic, based on distance and line of sight.
 When lagging behind, they will continually increase their SpeedMult until they catch up.
-If too far, they will instead automatically teleport behind you, unless you're riding a mount.
+If too far, they will instead automatically teleport behind you (at nearest ground level).
 (This includes if you are thrown in jail, etc. - there are currently no location checks)
 
 Spell tome learning avoids manipulating any spells a follower already knows from vanilla.
