@@ -4,10 +4,10 @@ Implements a number of tweaks to allow for smoother AI following in large groups
 ------
 Simply a port of my 2018 plugin from original Skyrim. Enjoy!
 
-[b]Original Non-SE Version - Steam Workshop (1.4.0)[/b]
+[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.4.0)[/size][/color][/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894]https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894[/url]
 
-[b]Additional Information[/b]
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
 Tweaks the following GMSTs:
 [list][*][b]fBumpReactionSmallDelayTime[/b]: 1.0 -> 0.25
 [*][b]fBumpReactionSmallWaitTimer[/b]: 3.0 -> 0.75
@@ -41,12 +41,12 @@ Also tweaks PlayerFollowerPackage:
 
 The above tweaks primarily apply to recruited followers, and may or may not apply to quest followers on a case-by-case basis (they typically use all sorts of different AI packages).
 
-[b]Compatibility[/b]
+[color=#6fa8dc][size=4]Compatibility[/size][/color]
 Should be compatible with anything that doesn't also tweak the above values.
 Should work in any multi-follower mod (though it may have a reduced effect, depending on the mod).
 If unsure, simply load this first, and whatever is loaded later will take precedence.
 
-[b]Uninstall Steps[/b]
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:

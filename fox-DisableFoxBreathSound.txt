@@ -4,16 +4,16 @@ Disables the idle breathing sound on foxes.
 ------
 Simply a port of my old (2012!) plugin from original Skyrim. Enjoy!
 
-[b]Original Non-SE Version - Steam Workshop (1.0.0)[/b]
+[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.0.0)[/size][/color][/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=74276765]https://steamcommunity.com/sharedfiles/filedetails/?id=74276765[/url]
 
-[b]Additional Information[/b]
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
 Intended to help keep one's sanity when using Kitt or Sola as a pet:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26441]https://www.nexusmods.com/skyrimspecialedition/mods/26441[/url]
 
 However, this could also just be used on its own if this sound particularly bothers you.
 
-[b]Uninstall Steps[/b]
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
 Simply remove the plugin as normal; no save cleaning necessary.
 ------
 Revision History:

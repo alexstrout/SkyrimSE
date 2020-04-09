@@ -7,13 +7,13 @@ Simply a port of my 2018 plugin from original Skyrim. Enjoy!
 Although honestly, I'd check out [url=https://www.nexusmods.com/skyrimspecialedition/mods/18076]Nether's Follower Framework[/url], because it's insanely well-featured.
 It came out only a day(!) after I originally released this, and totally blows this out of the water. :P
 
-[b]Original Non-SE Version - Steam Workshop (1.1.0)[/b]
+[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.1.0)[/size][/color][/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452]https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452[/url]
 
-[b]Requirements[/b]
+[color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
-[b]Usage[/b]
+[color=#6fa8dc][size=4]Usage[/size][/color]
 Recruit and otherwise use followers as normal. Currently, a maximum of 10 may be recruited.
 Vanilla followers from an existing save will be "imported" automatically.
 
@@ -22,7 +22,7 @@ To teach or un-teach spells, simply trade spell tomes with your follower.
 
 To command all followers at once, hold your "Sprint" key while initiating dialogue with a follower.
 
-[b]Additional Information[/b]
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
 Fully supports animal followers too! (provided they use the vanilla DialogueFollower system)
 
 Catch-up / teleporting is automatic, based on distance and line of sight.
@@ -34,7 +34,7 @@ Spell tome learning avoids manipulating any spells a follower already knows from
 However, many followers have 0 magicka growth, and are stuck at 50 magicka regardless of level.
 Thus, if needed, followers' minimum magicka is adjusted to meet their most expensive learned spell.
 
-[b]Configuration[/b]
+[color=#6fa8dc][size=4]Configuration[/size][/color]
 foxFollow comes with a few config variables:
 [list][*][b]1foxFollowTeleport[/b] - enable teleporting? [i]0/1 (default 1)[/i]
 [*][b]1foxFollowMaxDist[/b] - teleport distance, speedup distance is 0.5x this [i](default 4096.0)[/i]
@@ -45,25 +45,25 @@ e.g. "set 1foxFollowAdjMagicka to 0" to disable follower magicka adjustment for 
 For performance reasons, changes only take effect after talking to any follower.
 Setting 1foxFollowMaxDist to -1 will completely disable catch-up / teleport functionality.
 
-[b]Compatibility[/b]
+[color=#6fa8dc][size=4]Compatibility[/size][/color]
 Should be compatible with anything that isn't also a follower overhaul. :P
 (Specifically, anything that doesn't modify DialogueFollower or DialogueFollowerScript)
 
-[b]Optional Plugins[/b]
+[color=#6fa8dc][size=4]Optional Plugins[/size][/color]
 By default, 2 or more followers yields derpy follower AI, which can be mitigated using this plugin:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26737]https://www.nexusmods.com/skyrimspecialedition/mods/26737[/url]
 
 It is also possible to write spell tomes from (most) equipped spells using this plugin:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26738]https://www.nexusmods.com/skyrimspecialedition/mods/26738[/url]
 
-[b]Uninstall Steps[/b]
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
 Dismiss all followers in your party (very important!), then remove the plugin as normal.
 Optionally, use ReSaver (or similar) to remove any leftover references in your save:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
 [b]Warning:[/b] If you don't dismiss all followers before removing the plugin, they will permanently remember any spells learned from spell tomes, and may be permanently stuck in a follow state. Please avoid doing this!
 
-[b]Known Issues[/b]
+[color=#6fa8dc][size=4]Known Issues[/size][/color]
 It's possible to confuse the plugin by giving one follower an order and, before they've finished saying their line, immediately exiting dialogue and talking to another follower. This is because the vanilla DialogueFollower system:
 [list=1][*]Only differentiates between a single normal/animal follower
 [*]Only executes commands after a follower has finished saying their line[/list]
@@ -75,7 +75,7 @@ A similar situation occurs holding "Sprint" to command all followers - if you gi
 
 Worst-case scenario though, nothing breaks! :)
 
-[b]Acknowledgments[/b]
+[color=#6fa8dc][size=4]Acknowledgments[/size][/color]
 NorthStar's Followers Keep Up:
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=10172]https://steamcommunity.com/sharedfiles/filedetails/?id=10172[/url]
 Catch-up / teleport functionality was heavily influenced by this plugin. Good stuff!

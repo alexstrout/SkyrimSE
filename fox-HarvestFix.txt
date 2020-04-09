@@ -2,13 +2,13 @@ Brutal Flora Harvest Fix
 ------
 Implements a simple brute-force approach to fixing Skyrim's harvest respawn bug.
 ------
-[b]Non-SE Version[/b]
+[b][color=#6fa8dc][size=4]Non-SE Version[/size][/color][/b]
 These files should actually work in original Skyrim as-is.
 
-[b]Requirements[/b]
+[color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
-[b]Additional Information[/b]
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
 Skyrim has an annoying bug where harvested plants don't respawn when loading a save game.
 This is covered in great detail on the following mod pages:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/13186]bluedanieru's Flora Respawn Fix[/url]
@@ -42,11 +42,11 @@ Defaults to a 10-day respawn time (Skyrim's default cell reset time).
 However, alternate 3-day, 30-day, and instant respawn time versions are included in the download.
 (Respawn time may be further customized via editing foxHarvestFix.psc and recompiling the script)
 
-[b]Compatibility[/b]
+[color=#6fa8dc][size=4]Compatibility[/size][/color]
 Should be compatible with anything that doesn't also replace SKSE's ObjectReference.pex script.
 Technically compatible with other harvest fixes? But flora/fauna may respawn sooner than desired.
 
-[b]Uninstall Steps[/b]
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
 Simply replace the following with SKSE's original files:
 [list][*]Data\Scripts\objectreference.pex
 [*]Data\Scripts\Source\ObjectReference.psc[/list]

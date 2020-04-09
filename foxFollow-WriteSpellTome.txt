@@ -4,13 +4,13 @@ Implements the ability to write spell tomes from equipped spells in exchange for
 ------
 Simply a port of my 2018 plugin from original Skyrim, now with some enhanced features. Enjoy!
 
-[b]Original Non-SE Version - Steam Workshop (1.0.0)[/b]
+[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.0.0)[/size][/color][/b]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868]https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868[/url]
 
-[b]Requirements[/b]
+[color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
-[b]Usage[/b]
+[color=#6fa8dc][size=4]Usage[/size][/color]
 Equip the Lesser Power "Write Spell Tome" in either hand, and a desired spell in the other hand.
 After casting, the spell tome teaching that spell (if one exists) will appear in your inventory.
 
@@ -20,13 +20,13 @@ A Dragon Soul will be spent if a spell tome was successfully written; otherwise,
 
 [youtube]kNYIzrMZbwY[/youtube]
 
-[b]Additional Information[/b]
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
 Intended to be used with MFSTL to distribute otherwise unique, one-time spell tomes to followers:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/26712]https://www.nexusmods.com/skyrimspecialedition/mods/26712[/url]
 
 However, this could just be used on its own if you otherwise had some use for writing spell tomes.
 
-[b]Compatibility[/b]
+[color=#6fa8dc][size=4]Compatibility[/size][/color]
 Compatible with all vanilla / DLC spell tomes.
 Compatible with any spell mod that adds spell tomes to vendor "LItemSpellTomesXXSchool" lists.
 (This likely includes any popular spell mod.)
@@ -35,12 +35,12 @@ For the merge-savvy, the FLST of supported Books is "1foxFollowSpellTomeList".
 If a particular spell tome isn't being found by the mod, try adding it to this list in a patch.
 [i]However, please remake any 1.x.x compatibility patches you may have made.[/i]
 
-[b]Uninstall Steps[/b]
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
 Simply unequip Write Spell Tome (if equipped), then remove the plugin as normal.
 Optionally, use ReSaver (or similar) to remove any leftover references in your save:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
-[b]Known Issues[/b]
+[color=#6fa8dc][size=4]Known Issues[/size][/color]
 Parsing "LItemSpellTomesXXSchool" lists may not work if a mod adds any spell tome that doesn't belong to that school.
 Unfortunately, this is a necessary constraint for proper performance when iterating (potentially very large) lists of spell tomes.
 ------
