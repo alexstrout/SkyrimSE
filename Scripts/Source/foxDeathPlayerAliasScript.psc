@@ -1,14 +1,15 @@
 Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
-{Derpy script that handles bleedout}
+{Derpy script that handles bleedout and other cool stuff}
 
 Quest Property FollowerFinderQuest Auto
 ReferenceAlias Property VendorAlias Auto
 ReferenceAlias Property VendorChestAlias Auto
 
+int BleedoutAttemptsRemaining = 0
 float HealthToHealTo = 0.0
 bool ProcessingDeath = false
-bool WaitingForCellLoad = false
 bool ShouldBeFaded = false
+bool WaitingForCellLoad = false
 
 float Property BleedoutUpdateTime = 0.1 AutoReadOnly
 float Property FollowerFinderUpdateGameTime = 0.05 AutoReadOnly
@@ -25,7 +26,7 @@ event OnEnterBleedout()
 
 	;Player bleedout is weird, so SetNoBleedoutRecovery and start manually ticking up our health
 	ThisActor.SetNoBleedoutRecovery(true)
-	ThisActor.SetGhost(true)
+	BleedoutAttemptsRemaining = Math.Floor(40.0 / BleedoutUpdateTime) ;Hard cap a max bleedout time in case something goes wrong
 	HealthToHealTo = 10.0
 	RegisterForSingleUpdate(BleedoutUpdateTime)
 
@@ -40,22 +41,37 @@ event OnUpdate()
 		return
 	endif
 
+	;Try to fix potential bleedout loops from game weirdness
+	if (BleedoutAttemptsRemaining < 1)
+		ThisActor.PushActorAway(ThisActor, 0.0)
+		ThisActor.SetNoBleedoutRecovery(false)
+		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
+		BleedoutAttemptsRemaining = Math.Floor(5.0 / BleedoutUpdateTime)
+		RegisterForSingleUpdate(BleedoutUpdateTime)
+		return
+	endif
+
 	;If we're done bleeding out, clean up and bail
 	if (!ThisActor.IsBleedingOut())
 		ThisActor.SetNoBleedoutRecovery(false)
-		ThisActor.SetGhost(false)
 
 		;For some reason, bleedout recovery sometimes, but not always, restores all our health
 		;To work around this, damage our health back down to 1hp
 		;This has the nice side effect of proccing injuries from Wildcat etc.
-		;ThisActor.RestoreActorValue("Health", 10000.0)
 		float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
 		if (adjHealth > 0.0)
 			ThisActor.DamageActorValue("Health", adjHealth)
 		endif
 
 		HealthToHealTo = 0.0
+
+		;Fix broken ragdoll state
+		;TODO I know of no good way to test for this, unfortunately
+		Utility.Wait(1.0)
+		ThisActor.PushActorAway(ThisActor, 0.0)
 		return
+	else
+		BleedoutAttemptsRemaining -= 1
 	endif
 
 	;Otherwise, slowly heal up (just heal the amount of our update interval)
@@ -112,7 +128,7 @@ function HandleDeath(Actor ThisActor)
 	endif
 
 	;Begin fading - this will also lock out player controls
-	;At this point, we're considered committed to our fate, and should not be inturrupted
+	;At this point, we're considered committed to our fate, and should not be interrupted
 	ShouldBeFaded = true
 	Game.FadeOutGame(true, true, 0.0, FadeTime + 0.2)
 	Utility.Wait(FadeTime)
@@ -132,11 +148,11 @@ function HandleDeath(Actor ThisActor)
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	HealthToHealTo = 30.0
-	ThisActor.RestoreActorValue("Health", Math.abs(ThisActor.GetActorValue("Health")) + HealthToHealTo)
+	ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
 	Utility.Wait(BleedoutUpdateTime)
 	OnUpdate()
-	while (ThisActor.IsBleedingOut() || !Game.IsActivateControlsEnabled())
-		Utility.Wait(BleedoutUpdateTime + 1.0)
+	while (ThisActor.IsBleedingOut())
+		Utility.Wait(1.0 + BleedoutUpdateTime)
 	endwhile
 
 	;Engage!
