@@ -139,7 +139,7 @@ function HandleDeath()
 	Game.FadeOutGame(false, true, 60.0, FadeTime)
 
 	;Strip equipment and warp vendor to us - he should begin moving immediately on EvaluatePackage
-	ThisActor.UnequipAll() ;This will hand over all equipment to vendor - see OnObjectUnequipped
+	ThisActor.UnequipAll() ;This will hand over all equipment to vendor while ShouldBeFaded - see OnObjectUnequipped
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(ThisActor, 0.0, 0.0, 0.0, true)
 	ApplySpeedMult(VendorActor, 200.0) ;Zoom!
@@ -148,6 +148,7 @@ function HandleDeath()
 	Utility.Wait(8.0)
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
+	ThisActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
 	HealthToHealTo = 30.0
 	OnUpdate()
 	Utility.Wait(2.0)
@@ -164,6 +165,7 @@ function HandleDeath()
 
 	;We've arrived - place us somewhere sane on the navmesh (this isn't guaranteed when cell is unloaded)
 	TryFullTeleport(ThisActor, VendorActor)
+	ThisActor.SetGhost(false) ;Safe to get killed again
 
 	;Place vendor at a nice location in front of us
 	float aZ = ThisActor.GetAngleZ()
@@ -221,18 +223,19 @@ endEvent
 
 ;Handle stripping equipment from player
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-	if (!((akBaseObject as Ammo) || (akBaseObject as Armor) || (akBaseObject as Weapon)))
+	;Check ShouldBeFaded so we don't yank equipment while player still has control of equipment
+	if (!ShouldBeFaded \
+	|| !(akBaseObject as Ammo || akBaseObject as Armor || akBaseObject as Weapon))
 		return
 	endif
+
 	Actor ThisActor = Self.GetReference() as Actor
-	if (ThisActor.IsBleedingOut())
-		int count = 1
-		if (akBaseObject as Ammo)
-			count = ThisActor.GetItemCount(akBaseObject)
-			count = Utility.RandomInt(count / 2, count)
-		endif
-		ThisActor.RemoveItem(akBaseObject, count, true, VendorChestAlias.GetReference())
+	int count = 1
+	if (akBaseObject as Ammo)
+		count = ThisActor.GetItemCount(akBaseObject)
+		count = Utility.RandomInt(count / 2, count)
 	endif
+	ThisActor.RemoveItem(akBaseObject, count, true, VendorChestAlias.GetReference())
 endEvent
 
 ;Try a teleport, attempting to account for cell changes
