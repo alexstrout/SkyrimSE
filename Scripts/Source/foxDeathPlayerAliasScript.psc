@@ -5,13 +5,13 @@ Quest Property FollowerFinderQuest Auto
 ReferenceAlias Property VendorAlias Auto
 ReferenceAlias Property VendorChestAlias Auto
 
-int BleedoutAttemptsRemaining = 0
 float HealthToHealTo = 0.0
+bool DeferredBump = false
+
 bool ProcessingDeath = false
 bool ShouldBeFaded = false
 bool WaitingForCellLoad = false
 
-float Property BleedoutUpdateTime = 0.1 AutoReadOnly
 float Property FollowerFinderUpdateGameTime = 0.05 AutoReadOnly
 float Property FadeTime = 2.0 AutoReadOnly
 float Property VendorFinalPlacementDist = 512.0 AutoReadOnly
@@ -24,90 +24,90 @@ event OnEnterBleedout()
 		return
 	endif
 
-	;Player bleedout is weird, so SetNoBleedoutRecovery and start manually ticking up our health
+	;Player bleedout is weird, so SetNoBleedoutRecovery and just manually heal after some time
+	;This should be safe from interruption - no heals etc. can affect us in this state
 	ThisActor.SetNoBleedoutRecovery(true)
-	BleedoutAttemptsRemaining = Math.Floor(40.0 / BleedoutUpdateTime) ;Hard cap a max bleedout time in case something goes wrong
 	HealthToHealTo = 10.0
-	RegisterForSingleUpdate(BleedoutUpdateTime)
+	RegisterForSingleUpdate(20.0)
 
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	RegisterForSingleUpdateGameTime(FollowerFinderUpdateGameTime)
 endEvent
 event OnUpdate()
+	;Abort our friendlies check if still running
+	;There's a miniscule chance of a race condition here if these fire on the same frame
+	;Worst case, we get up from bleedout while starting defeat scenario - no big deal
+	UnRegisterForUpdateGameTime()
+	if (FollowerFinderQuest.IsRunning())
+		FollowerFinderQuest.Stop()
+	endif
+
 	;If we're somehow invalid, try again later
 	Actor ThisActor = Self.GetReference() as Actor
 	if (!ThisActor)
-		RegisterForSingleUpdate(BleedoutUpdateTime)
+		RegisterForSingleUpdate(2.0)
 		return
 	endif
 
-	;Try to fix potential bleedout loops from game weirdness
-	if (BleedoutAttemptsRemaining < 1)
-		ThisActor.PushActorAway(ThisActor, 0.0)
-		ThisActor.SetNoBleedoutRecovery(false)
+	;If we're still bleeding out...
+	if (ThisActor.IsBleedingOut())
+		;Determine if we should bump later to fix ragdoll-bleedout issues
+		if (!ThisActor.GetAnimationVariableBool("IsBleedingOut"))
+			DeferredBump = true
+		endif
+
+		;Heal to (nearly) full and clear NoBleedoutRecovery
 		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
-		BleedoutAttemptsRemaining = Math.Floor(5.0 / BleedoutUpdateTime)
-		RegisterForSingleUpdate(BleedoutUpdateTime)
+		ThisActor.SetNoBleedoutRecovery(false)
+
+		;We'll either be done bleeding out next run or need a retry...
+		RegisterForSingleUpdate(0.1)
 		return
 	endif
 
 	;If we're done bleeding out, clean up and bail
-	if (!ThisActor.IsBleedingOut())
-		ThisActor.SetNoBleedoutRecovery(false)
+	;First, for some reason, bleedout recovery sometimes restores all our health
+	;Though this doesn't matter as we now just heal to mostly full anyway
+	;Either way, to work around this, damage our health back down to HealthToHealTo
+	;This has the nice side effect of proccing additional injuries from Wildcat etc.
+	float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
+	if (adjHealth > 0.0)
+		ThisActor.DamageActorValue("Health", adjHealth)
+	endif
+	HealthToHealTo = 0.0
 
-		;For some reason, bleedout recovery sometimes, but not always, restores all our health
-		;To work around this, damage our health back down to 1hp
-		;This has the nice side effect of proccing injuries from Wildcat etc.
-		float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
-		if (adjHealth > 0.0)
-			ThisActor.DamageActorValue("Health", adjHealth)
-		endif
-
-		HealthToHealTo = 0.0
-
-		;Fix broken ragdoll state
-		;TODO I know of no good way to test for this, unfortunately
+	;Fix broken ragdoll state!
+	if (DeferredBump)
+		DeferredBump = false
 		Utility.Wait(1.0)
 		ThisActor.PushActorAway(ThisActor, 0.0)
-		return
-	else
-		BleedoutAttemptsRemaining -= 1
 	endif
-
-	;Otherwise, slowly heal up (just heal the amount of our update interval)
-	ThisActor.RestoreActorValue("Health", BleedoutUpdateTime)
-	RegisterForSingleUpdate(BleedoutUpdateTime)
 endEvent
 
 ;Full death handling
 event OnUpdateGameTime()
 	;Only allow one ProcessingDeath or FollowerFinderQuest thread
+	;This could legitimately happen if we repeatedly enter bleedout before we'd finished ProcessingDeath
+	;If we're actually getting our ass kicked that much, a normal non-punishing bleedout is fine :)
 	if (ProcessingDeath || FollowerFinderQuest.IsRunning())
 		return
 	endif
 
-	;If we're somehow invalid, try again later
-	Actor ThisActor = Self.GetReference() as Actor
-	if (!ThisActor)
-		RegisterForSingleUpdateGameTime(FollowerFinderUpdateGameTime)
-		return
-	endif
-
-	;If we don't have any around, then bail and handle our actual death
+	;If we don't have any friends around, start up our defeat logic
 	FollowerFinderQuest.Start()
 	if (!(FollowerFinderQuest.GetAlias(0) as ReferenceAlias).GetReference())
 		FollowerFinderQuest.Stop()
-		HandleDeath(ThisActor)
+		HandleDeath()
 		return
 	endif
 
 	FollowerFinderQuest.Stop()
 	RegisterForSingleUpdateGameTime(FollowerFinderUpdateGameTime)
 endEvent
-function HandleDeath(Actor ThisActor)
+function HandleDeath()
+	;OnUpdateGameTime will guard against this being called more than once while ProcessingDeath
 	ProcessingDeath = true
 	UnRegisterForUpdate()
-	UnRegisterForUpdateGameTime()
 	;Debug.MessageBox("You died")
 
 	;This will just kill us - TODO maybe hook up as an option?
@@ -119,10 +119,11 @@ function HandleDeath(Actor ThisActor)
 	;Ensure our aliases are set up right - we purposefully only check this once
 	;After this point, we must assume all actors are valid, and let functions fail when they are not
 	;TryFullTeleport is the one exception, since that handles the delicate task of player transport
+	Actor ThisActor = Self.GetReference() as Actor
 	Actor VendorActor = VendorAlias.GetReference() as Actor
 	ObjectReference VendorChest = VendorAlias.GetReference()
 	if (!ThisActor || !VendorActor || !VendorChest)
-		RegisterForSingleUpdate(BleedoutUpdateTime)
+		OnUpdate()
 		ProcessingDeath = false
 		return
 	endif
@@ -148,11 +149,10 @@ function HandleDeath(Actor ThisActor)
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	HealthToHealTo = 30.0
-	ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
-	Utility.Wait(BleedoutUpdateTime)
 	OnUpdate()
+	Utility.Wait(2.0)
 	while (ThisActor.IsBleedingOut())
-		Utility.Wait(1.0 + BleedoutUpdateTime)
+		Utility.Wait(1.0)
 	endwhile
 
 	;Engage!
@@ -178,13 +178,18 @@ function HandleDeath(Actor ThisActor)
 	Game.FadeOutGame(false, true, 0.0, FadeTime)
 	Utility.Wait(5.0)
 
+	;Oops! We dragged player somewhere unsafe, guess we can help fight
+	;This is mostly here to avoid the upcoming EvaluatePackage in the middle of combat
+	while (VendorActor.IsInCombat())
+		Utility.Wait(5.0)
+	endwhile
+
 	;Signal vendor to wait for us to make a decision
 	GetOwningQuest().SetStage(2)
 	VendorActor.EvaluatePackage()
 	Utility.Wait(10.0)
 
-	;Oops! We dragged player somewhere unsafe, guess we can help fight
-	;Also, don't run off while the player is still blabbing, how rude
+	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
 	while (VendorActor.IsInCombat() \
 	|| VendorActor.IsInDialogueWithPlayer())
 		Utility.Wait(5.0)
@@ -216,15 +221,17 @@ endEvent
 
 ;Handle stripping equipment from player
 event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-	if (ProcessingDeath)
-		int count = akBaseObject.GetType()
-		if (count == 42) ;kAmmo
-			count = Self.GetReference().GetItemCount(akBaseObject)
+	if (!((akBaseObject as Ammo) || (akBaseObject as Armor) || (akBaseObject as Weapon)))
+		return
+	endif
+	Actor ThisActor = Self.GetReference() as Actor
+	if (ThisActor.IsBleedingOut())
+		int count = 1
+		if (akBaseObject as Ammo)
+			count = ThisActor.GetItemCount(akBaseObject)
 			count = Utility.RandomInt(count / 2, count)
-		else
-			count = 1
 		endif
-		Self.GetReference().RemoveItem(akBaseObject, count, true, VendorChestAlias.GetReference())
+		ThisActor.RemoveItem(akBaseObject, count, true, VendorChestAlias.GetReference())
 	endif
 endEvent
 
