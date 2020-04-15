@@ -1,20 +1,9 @@
 Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
 {Derpy script that handles bleedout and other cool stuff}
 
-Quest Property FollowerFinderQuest Auto
-ReferenceAlias Property VendorAlias Auto
-ReferenceAlias Property VendorChestAlias Auto
+foxDeathQuestScript Property DeathQuest Auto
 
-float HealthToHealTo = 0.0
 bool DeferredBump = false
-
-bool ProcessingDeath = false
-bool ShouldBeFaded = false
-bool WaitingForCellLoad = false
-
-float Property FollowerFinderUpdateGameTime = 0.05 AutoReadOnly
-float Property FadeTime = 2.0 AutoReadOnly
-float Property VendorFinalPlacementDist = 512.0 AutoReadOnly
 
 ;Bleedout handling
 event OnEnterBleedout()
@@ -27,19 +16,21 @@ event OnEnterBleedout()
 	;Player bleedout is weird, so SetNoBleedoutRecovery and just manually heal after some time
 	;This should be safe from interruption - no heals etc. can affect us in this state
 	ThisActor.SetNoBleedoutRecovery(true)
-	HealthToHealTo = 10.0
 	RegisterForSingleUpdate(20.0)
 
 	;Also start checking for nearby friendlies via FollowerFinderQuest
-	RegisterForSingleUpdateGameTime(FollowerFinderUpdateGameTime)
+	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
 endEvent
 event OnUpdate()
+	ExitBleedout()
+endEvent
+function ExitBleedout(float HealthToHealTo = 10.0)
 	;Abort our friendlies check if still running
 	;There's a miniscule chance of a race condition here if these fire on the same frame
 	;Worst case, we get up from bleedout while starting defeat scenario - no big deal
-	UnRegisterForUpdateGameTime()
-	if (FollowerFinderQuest.IsRunning())
-		FollowerFinderQuest.Stop()
+	DeathQuest.UnRegisterForUpdate()
+	if (DeathQuest.FollowerFinderQuest.IsRunning())
+		DeathQuest.FollowerFinderQuest.Stop()
 	endif
 
 	;If we're somehow invalid, try again later
@@ -74,7 +65,6 @@ event OnUpdate()
 	if (adjHealth > 0.0)
 		ThisActor.DamageActorValue("Health", adjHealth)
 	endif
-	HealthToHealTo = 0.0
 
 	;Fix broken ragdoll state!
 	if (DeferredBump)
@@ -82,184 +72,51 @@ event OnUpdate()
 		Utility.Wait(1.0)
 		ThisActor.PushActorAway(ThisActor, 0.0)
 	endif
-endEvent
-
-;Full death handling
-event OnUpdateGameTime()
-	;Only allow one ProcessingDeath or FollowerFinderQuest thread
-	;This could legitimately happen if we repeatedly enter bleedout before we'd finished ProcessingDeath
-	;If we're actually getting our ass kicked that much, a normal non-punishing bleedout is fine :)
-	if (ProcessingDeath || FollowerFinderQuest.IsRunning())
-		return
-	endif
-
-	;If we don't have any friends around, start up our defeat logic
-	FollowerFinderQuest.Start()
-	if (!(FollowerFinderQuest.GetAlias(0) as ReferenceAlias).GetReference())
-		FollowerFinderQuest.Stop()
-		HandleDeath()
-		return
-	endif
-
-	FollowerFinderQuest.Stop()
-	RegisterForSingleUpdateGameTime(FollowerFinderUpdateGameTime)
-endEvent
-function HandleDeath()
-	;OnUpdateGameTime will guard against this being called more than once while ProcessingDeath
-	ProcessingDeath = true
-	UnRegisterForUpdate()
-	;Debug.MessageBox("You died")
-
-	;This will just kill us - TODO maybe hook up as an option?
-	;ThisActor.ForceActorValue("Health", 1.0)
-	;Self.Clear()
-	;Utility.Wait(0.5)
-	;ThisActor.Kill()
-
-	;Ensure our aliases are set up right - we purposefully only check this once
-	;After this point, we must assume all actors are valid, and let functions fail when they are not
-	;TryFullTeleport is the one exception, since that handles the delicate task of player transport
-	Actor ThisActor = Self.GetReference() as Actor
-	Actor VendorActor = VendorAlias.GetReference() as Actor
-	ObjectReference VendorChest = VendorAlias.GetReference()
-	if (!ThisActor || !VendorActor || !VendorChest)
-		OnUpdate()
-		ProcessingDeath = false
-		return
-	endif
-
-	;Begin fading - this will also lock out player controls
-	;At this point, we're considered committed to our fate, and should not be interrupted
-	ShouldBeFaded = true
-	Game.FadeOutGame(true, true, 0.0, FadeTime + 0.2)
-	Utility.Wait(FadeTime)
-
-	;Hold our fade - this might expire if we get stuck in a wait-loop later
-	;But by then, we probably want to see what's going on anyway
-	Game.FadeOutGame(false, true, 60.0, FadeTime)
-
-	;Strip equipment and warp vendor to us - he should begin moving immediately on EvaluatePackage
-	ThisActor.UnequipAll() ;This will hand over all equipment to vendor while ShouldBeFaded - see OnObjectUnequipped
-	VendorActor.Disable(false)
-	VendorActor.MoveTo(ThisActor, 0.0, 0.0, 0.0, true)
-	ApplySpeedMult(VendorActor, 200.0) ;Zoom!
-	VendorActor.Enable(false)
-	VendorActor.EvaluatePackage()
-	Utility.Wait(8.0)
-
-	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
-	ThisActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
-	HealthToHealTo = 30.0
-	OnUpdate()
-	Utility.Wait(2.0)
-	while (ThisActor.IsBleedingOut())
-		Utility.Wait(1.0)
-	endwhile
-
-	;Engage!
-	ApplySpeedMult(VendorActor, 100.0)
-	TryFullTeleport(ThisActor, VendorActor) ;Internally tests ThisActor, VendorActor
-	while (WaitingForCellLoad)
-		TryFullTeleport(ThisActor, VendorActor)
-	endwhile
-
-	;We've arrived - place us somewhere sane on the navmesh (this isn't guaranteed when cell is unloaded)
-	TryFullTeleport(ThisActor, VendorActor)
-	ThisActor.SetGhost(false) ;Safe to get killed again
-
-	;Place vendor at a nice location in front of us
-	float aZ = ThisActor.GetAngleZ()
-	VendorActor.Disable(false)
-	VendorActor.MoveTo(ThisActor, VendorFinalPlacementDist * Math.Sin(aZ), VendorFinalPlacementDist * Math.Cos(aZ), 0.0, true)
-	VendorActor.Enable(false)
-
-	;Signal vendor to approach, and fade in
-	GetOwningQuest().SetStage(1)
-	VendorActor.EvaluatePackage()
-	ShouldBeFaded = false
-	Game.FadeOutGame(false, true, 0.0, FadeTime)
-	Utility.Wait(5.0)
-
-	;Oops! We dragged player somewhere unsafe, guess we can help fight
-	;This is mostly here to avoid the upcoming EvaluatePackage in the middle of combat
-	while (VendorActor.IsInCombat())
-		Utility.Wait(5.0)
-	endwhile
-
-	;Signal vendor to wait for us to make a decision
-	GetOwningQuest().SetStage(2)
-	VendorActor.EvaluatePackage()
-	Utility.Wait(10.0)
-
-	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
-	while (VendorActor.IsInCombat() \
-	|| VendorActor.IsInDialogueWithPlayer())
-		Utility.Wait(5.0)
-	endwhile
-
-	;I must go, my planet needs me
-	GetOwningQuest().Reset()
-	VendorActor.EvaluatePackage()
-	Utility.Wait(10.0)
-	RegisterForSingleLOSLost(ThisActor, VendorActor)
 endFunction
-event OnLostLOS(Actor akViewer, ObjectReference akTarget)
-	;This appears to be safe and always fires, even if we previously looked away or even zoned
-	;Debug.Notification("foxDeath - OnLostLOS")
-	akTarget.Disable(false)
-	akTarget.MoveToMyEditorLocation()
-	akTarget.Enable(false)
-	ProcessingDeath = false
-endEvent
 
-;Additionally hold our fade OnPlayerLoadGame if needed
-event OnPlayerLoadGame()
-	;Do this as a short hold (with legit fade at the end) in case of race condition with HandleDeath
-	while (ShouldBeFaded)
-		Game.FadeOutGame(false, true, 1.2, FadeTime)
-		Utility.Wait(1.0)
-	endwhile
-endEvent
-
-;Handle stripping equipment from player
-event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-	;Check ShouldBeFaded so we don't yank equipment while player still has control of equipment
-	if (!ShouldBeFaded \
-	|| !(akBaseObject as Ammo || akBaseObject as Armor || akBaseObject as Weapon))
-		return
-	endif
-
+;Try a teleport, attempting to account for cell changes - returns true if cell appears loaded (more or less)
+;Latent - waits a second to test if cell is relatively loaded
+bool function TryFullTeleport(Actor VendorActor)
 	Actor ThisActor = Self.GetReference() as Actor
-	int count = 1
-	if (akBaseObject as Ammo)
-		count = ThisActor.GetItemCount(akBaseObject)
-		count = Utility.RandomInt(count / 2, count)
-	endif
-	ThisActor.RemoveItem(akBaseObject, count, true, VendorChestAlias.GetReference())
-endEvent
-
-;Try a teleport, attempting to account for cell changes
-function TryFullTeleport(Actor ThisActor, Actor VendorActor)
 	if (ThisActor && VendorActor)
 		VendorActor.Disable(false)
 		ThisActor.MoveTo(VendorActor, 0.0, 0.0, 0.0, true)
 		VendorActor.Enable(false)
 	endif
 	Utility.Wait(1.0)
-	if (!ThisActor || !VendorActor \
-	|| !ThisActor.GetParentCell() \
-	|| !ThisActor.Is3DLoaded() \
-	|| !VendorActor.Is3DLoaded())
-		WaitingForCellLoad = true
-	endif
+	return ThisActor && VendorActor \
+		&& ThisActor.GetParentCell() \
+		&& ThisActor.GetParentCell().IsAttached() \
+		&& ThisActor.Is3DLoaded() \
+		&& VendorActor.Is3DLoaded()
 endFunction
-event OnCellLoad()
-	WaitingForCellLoad = false
+
+;Registered from DeathQuest, just forward the callback
+event OnLostLOS(Actor akViewer, ObjectReference akTarget)
+	DeathQuest.PlayerAliasOnLostLOS(akViewer, akTarget)
 endEvent
 
-;Apply SpeedMult - CarryWeight must be adjusted for SpeedMult to apply
-function ApplySpeedMult(Actor VendorActor, float SpeedMult)
-	VendorActor.SetActorValue("SpeedMult", SpeedMult)
-	VendorActor.ModActorValue("CarryWeight", 1.0)
-	VendorActor.ModActorValue("CarryWeight", -1.0)
-endFunction
+;Special state for processing our death, so that these events are ignored during normal gameplay
+;A sane prerequisite for this state is not having any control of our character (e.g. via FadeManager's fade)
+state ProcessingDeath
+	;Handle stripping equipment from player - here so we don't yank equipment while player still has control of it
+	event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
+		;Equipable stuff only!
+		if (!(akBaseObject as Ammo || akBaseObject as Armor || akBaseObject as Weapon))
+			return
+		endif
+
+		Actor ThisActor = Self.GetReference() as Actor
+		int count = 1
+		if (akBaseObject as Ammo)
+			count = ThisActor.GetItemCount(akBaseObject)
+			count = Utility.RandomInt(count / 2, count)
+		endif
+		ThisActor.RemoveItem(akBaseObject, count, true, DeathQuest.VendorChestAlias.GetReference())
+	endEvent
+
+	;Needed for DeathQuest, just forward the callback
+	event OnCellLoad()
+		DeathQuest.PlayerAliasOnCellLoad()
+	endEvent
+endState
