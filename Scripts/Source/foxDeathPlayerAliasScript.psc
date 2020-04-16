@@ -5,6 +5,8 @@ foxDeathQuestScript Property DeathQuest Auto
 
 bool DeferredBump = false
 
+float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
+
 ;Bleedout handling
 event OnEnterBleedout()
 	;If we don't exist or already have NoBleedoutRecovery set (e.g. some other death-handling event is happening?), bail immediately
@@ -17,6 +19,9 @@ event OnEnterBleedout()
 	;This should be safe from interruption - no heals etc. can affect us in this state
 	ThisActor.SetNoBleedoutRecovery(true)
 	RegisterForSingleUpdate(20.0)
+
+	;Actually, make sure potions etc. won't bring us out early
+	ThisActor.ModActorValue("Health", -BleedoutModHealthAmt)
 
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
@@ -46,6 +51,9 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 		if (!ThisActor.GetAnimationVariableBool("IsBleedingOut"))
 			DeferredBump = true
 		endif
+
+		;Allow us to live / heal again :P
+		ThisActor.ModActorValue("Health", BleedoutModHealthAmt)
 
 		;Heal to (nearly) full and clear NoBleedoutRecovery
 		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
