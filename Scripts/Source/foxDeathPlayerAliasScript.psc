@@ -23,6 +23,11 @@ event OnEnterBleedout()
 	;Actually, make sure potions etc. won't bring us out early
 	ThisActor.ModActorValue("Health", -BleedoutModHealthAmt)
 
+	;Immediately queue our items for removal, in case we try to cheat by unequipping during bleedout
+	;Also prevent us from dropping any items during this time
+	DeathQuest.ItemManagerAlias.EnumerateItemsToStrip(ThisActor)
+	DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(true)
+
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
 endEvent
@@ -54,6 +59,9 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 
 		;Allow us to live / heal again :P
 		ThisActor.ModActorValue("Health", BleedoutModHealthAmt)
+
+		;Allow us to drop items again
+		DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
 
 		;Heal to (nearly) full and clear NoBleedoutRecovery
 		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
@@ -106,23 +114,8 @@ endEvent
 
 ;Special state for processing our death, so that these events are ignored during normal gameplay
 ;A sane prerequisite for this state is not having any control of our character (e.g. via FadeManager's fade)
+;This used to handle equipment removal and mattered more, but still saves on unnecessary OnCellLoad calls I guess!
 state ProcessingDeath
-	;Handle stripping equipment from player - here so we don't yank equipment while player still has control of it
-	event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-		;Equipable stuff only!
-		if (!(akBaseObject as Ammo || akBaseObject as Armor || akBaseObject as Weapon))
-			return
-		endif
-
-		Actor ThisActor = Self.GetReference() as Actor
-		int count = 1
-		if (akBaseObject as Ammo)
-			count = ThisActor.GetItemCount(akBaseObject)
-			count = Utility.RandomInt(count / 2, count)
-		endif
-		ThisActor.RemoveItem(akBaseObject, count, true, DeathQuest.VendorChestAlias.GetReference())
-	endEvent
-
 	;Needed for DeathQuest, just forward the callback
 	event OnCellLoad()
 		DeathQuest.PlayerAliasOnCellLoad()

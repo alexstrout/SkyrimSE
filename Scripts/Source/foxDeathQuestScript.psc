@@ -8,6 +8,7 @@ foxDeathPlayerAliasScript Property PlayerAlias Auto
 foxDeathVendorAliasScript Property VendorAlias Auto
 ReferenceAlias Property VendorChestAlias Auto
 foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
+foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 
 bool ProcessingDeath = false
 
@@ -51,7 +52,7 @@ function HandleDeath()
 	;TryFullTeleport is the one exception, since that handles the delicate task of player transport
 	Actor PlayerActor = PlayerAlias.GetReference() as Actor
 	Actor VendorActor = VendorAlias.GetReference() as Actor
-	ObjectReference VendorChest = VendorAlias.GetReference()
+	ObjectReference VendorChest = VendorChestAlias.GetReference()
 	if (!PlayerActor || !VendorActor || !VendorChest)
 		PlayerAlias.ExitBleedout()
 		ProcessingDeath = false
@@ -70,16 +71,23 @@ function HandleDeath()
 	PlayerAlias.GoToState("ProcessingDeath")
 	FadeManagerAlias.FadeOut()
 
-	;Strip equipment and warp vendor to us - he should begin moving immediately on EvaluatePackage
-	PlayerActor.UnequipAll() ;This will hand over all equipment to vendor while ProcessingDeath - see OnObjectUnequipped
+	;Figure out which equipment we should strip
+	;ItemManagerAlias.EnumerateItemsToStrip(PlayerActor) ;This is actually done first in PlayerAlias::OnEnterBleedout
+	ItemManagerAlias.EnumerateItemsToStripOnFollowers()
+
+	;Warp vendor to us - he should begin moving immediately on EvaluatePackage
 	RequestedVendorAIState = 1
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(PlayerActor, 0.0, 0.0, 0.0, true)
 	VendorAlias.ApplySpeedMult(200.0) ;Zoom!
 	VendorActor.Enable(false)
 	VendorActor.EvaluatePackage()
-	VendorActor.AddSpell(VendorAlias.InvisibilityAbility)
+	VendorAlias.SetInvisible(true)
 	Utility.Wait(8.0)
+
+	;Actually strip equipment
+	ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
+	ItemManagerAlias.StripAllItems(VendorChest)
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	PlayerActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
@@ -98,7 +106,7 @@ function HandleDeath()
 		while (WaitingForCellLoad > 2 || !PlayerAlias.TryFullTeleport(VendorActor))
 			WaitingForCellLoad = 3
 		endwhile
-		;Debug.Trace("foxDeathScript - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
+		;Debug.Trace("foxDeath - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
 		WaitingForCellLoad -= 1
 	endwhile
 	PlayerActor.SheatheWeapon() ;Fixes weirdness if we were mid-action on a previously equipped weapon
@@ -109,7 +117,7 @@ function HandleDeath()
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(PlayerActor, VendorFinalPlacementDist * Math.Sin(aZ), VendorFinalPlacementDist * Math.Cos(aZ), 0.0, true)
 	VendorActor.Enable(false)
-	VendorActor.RemoveSpell(VendorAlias.InvisibilityAbility)
+	VendorAlias.SetInvisible(false)
 
 	;Signal vendor to approach, and fade in
 	RequestedVendorAIState = 2
@@ -144,7 +152,7 @@ endFunction
 
 ;Forwarded from PlayerAlias
 function PlayerAliasOnCellLoad()
-	;Debug.Trace("foxDeathScript - PlayerAliasOnCellLoad WaitingForCellLoad " + WaitingForCellLoad)
+	;Debug.Trace("foxDeath - PlayerAliasOnCellLoad WaitingForCellLoad " + WaitingForCellLoad)
 	WaitingForCellLoad = 2
 endFunction
 function PlayerAliasOnLostLOS(Actor akViewer, ObjectReference akTarget)
@@ -156,4 +164,5 @@ function PlayerAliasOnLostLOS(Actor akViewer, ObjectReference akTarget)
 	akTarget.Enable(false)
 	(akTarget as Actor).EvaluatePackage()
 	ProcessingDeath = false
+	;Debug.Notification("foxDeath - Processing finished!")
 endFunction
