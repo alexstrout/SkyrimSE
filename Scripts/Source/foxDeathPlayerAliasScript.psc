@@ -4,6 +4,7 @@ Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
 foxDeathQuestScript Property DeathQuest Auto
 
 bool DeferredBump = false
+float CurrentBleedoutModHealthAmt = 0.0
 
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
 
@@ -11,7 +12,7 @@ float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
 event OnEnterBleedout()
 	;If we don't exist or already have NoBleedoutRecovery set (e.g. some other death-handling event is happening?), bail immediately
 	Actor ThisActor = Self.GetReference() as Actor
-	if (!ThisActor || ThisActor.GetNoBleedoutRecovery())
+	if (!ThisActor || ThisActor.GetNoBleedoutRecovery() || CurrentBleedoutModHealthAmt)
 		return
 	endif
 
@@ -21,12 +22,18 @@ event OnEnterBleedout()
 	RegisterForSingleUpdate(20.0)
 
 	;Actually, make sure potions etc. won't bring us out early
-	ThisActor.ModActorValue("Health", -BleedoutModHealthAmt)
+	AdjustBleedoutModHealthAmt(-BleedoutModHealthAmt)
 
 	;Immediately queue our items for removal, in case we try to cheat by unequipping during bleedout
 	;Also prevent us from dropping any items during this time
 	DeathQuest.ItemManagerAlias.EnumerateItemsToStrip(ThisActor)
 	DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(true)
+
+	;Bump if we're in a weird state
+	if (!ThisActor.GetAnimationVariableBool("IsBleedingOut"))
+		ThisActor.PushActorAway(ThisActor, 0.0)
+		DeferredBump = true
+	endif
 
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
@@ -58,13 +65,16 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 		endif
 
 		;Allow us to live / heal again :P
-		ThisActor.ModActorValue("Health", BleedoutModHealthAmt)
+		;We will actually force this to a massive positive amount to ensure we get up
+		if (CurrentBleedoutModHealthAmt < 0)
+			AdjustBleedoutModHealthAmt(BleedoutModHealthAmt * 2)
+		endif
 
 		;Allow us to drop items again
 		DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
 
 		;Heal to (nearly) full and clear NoBleedoutRecovery
-		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
+		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health") + BleedoutModHealthAmt)
 		ThisActor.SetNoBleedoutRecovery(false)
 
 		;We'll either be done bleeding out next run or need a retry...
@@ -73,7 +83,10 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 	endif
 
 	;If we're done bleeding out, clean up and bail
-	;First, for some reason, bleedout recovery sometimes restores all our health
+	;First, reset our mega-health back down to normal
+	AdjustBleedoutModHealthAmt()
+
+	;For some reason, bleedout recovery sometimes restores all our health
 	;Though this doesn't matter as we now just heal to mostly full anyway
 	;Either way, to work around this, damage our health back down to HealthToHealTo
 	;This has the nice side effect of proccing additional injuries from Wildcat etc.
@@ -87,16 +100,27 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 		DeferredBump = false
 		Utility.Wait(1.0)
 		ThisActor.PushActorAway(ThisActor, 0.0)
+		ThisActor.QueueNiNodeUpdate() ;Fixes eyes stuck shut?
+	endif
+endFunction
+function AdjustBleedoutModHealthAmt(float AdjAmount = 0.0)
+	Actor ThisActor = Self.GetReference() as Actor
+	if (AdjAmount)
+		ThisActor.ModActorValue("Health", AdjAmount)
+		CurrentBleedoutModHealthAmt += AdjAmount
+	else
+		ThisActor.ModActorValue("Health", -CurrentBleedoutModHealthAmt)
+		CurrentBleedoutModHealthAmt = 0
 	endif
 endFunction
 
 ;Try a teleport, attempting to account for cell changes - returns true if cell appears loaded (more or less)
 ;Latent - waits a second to test if cell is relatively loaded
-bool function TryFullTeleport(Actor VendorActor)
+bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
 	Actor ThisActor = Self.GetReference() as Actor
 	if (ThisActor && VendorActor)
 		VendorActor.Disable(false)
-		ThisActor.MoveTo(VendorActor, 0.0, 0.0, 0.0, true)
+		ThisActor.MoveTo(VendorActor, 0.0, 0.0, 0.0, abMatchRotation)
 		VendorActor.Enable(false)
 	endif
 	Utility.Wait(1.0)

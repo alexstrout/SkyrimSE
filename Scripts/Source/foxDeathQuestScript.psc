@@ -83,7 +83,15 @@ function HandleDeath()
 	VendorActor.Enable(false)
 	VendorActor.EvaluatePackage()
 	VendorAlias.SetInvisible(true)
-	Utility.Wait(8.0)
+	float StartingDist = VendorActor.GetDistance(PlayerActor)
+	Utility.Wait(1.0)
+
+	;Switch to alternate package if we're not moving
+	if (Math.abs(VendorActor.GetDistance(PlayerActor) - StartingDist) < 2.0)
+		RequestedVendorAIState = 3
+		VendorActor.EvaluatePackage()
+	endif
+	Utility.Wait(7.0)
 
 	;Actually strip equipment
 	ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
@@ -103,7 +111,7 @@ function HandleDeath()
 	while (WaitingForCellLoad)
 		;If we've arrived, try again to place us somewhere sane on the navmesh (this isn't guaranteed while cell is unloaded)
 		;If not, we'll just reset WaitingForCellLoad and go again to do the above
-		while (WaitingForCellLoad > 2 || !PlayerAlias.TryFullTeleport(VendorActor))
+		while (WaitingForCellLoad > 2 || !PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2))
 			WaitingForCellLoad = 3
 		endwhile
 		;Debug.Trace("foxDeath - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
@@ -127,24 +135,15 @@ function HandleDeath()
 	Utility.Wait(5.0)
 
 	;Oops! We dragged player somewhere unsafe, guess we can help fight
-	;This is mostly here to avoid the upcoming EvaluatePackage in the middle of combat
-	while (VendorActor.IsInCombat())
-		Utility.Wait(5.0)
-	endwhile
-
-	;Signal vendor to wait for us to make a decision
-	RequestedVendorAIState = 0
-	VendorActor.EvaluatePackage()
-	Utility.Wait(10.0)
-
 	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
 	while (VendorActor.IsInCombat() \
 	|| VendorActor.IsInDialogueWithPlayer())
 		Utility.Wait(5.0)
 	endwhile
+	Utility.Wait(10.0)
 
 	;I must go, my planet needs me
-	RequestedVendorAIState = 1
+	RequestedVendorAIState = 3
 	VendorActor.EvaluatePackage()
 	Utility.Wait(10.0)
 	PlayerAlias.RegisterForSingleLOSLost(PlayerActor, VendorActor)
