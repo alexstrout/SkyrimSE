@@ -5,8 +5,25 @@ foxDeathQuestScript Property DeathQuest Auto
 
 bool DeferredBump = false
 float CurrentBleedoutModHealthAmt = 0.0
+Spell[] SpellsToEquip
+Shout ShoutToEquip = None
 
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
+
+;Initialization stuff
+event OnInit()
+	SpellsToEquip = new Spell[4]
+endEvent
+
+;Record our currently equipped spells to re-equip later (fixes spell weirdness on getting up from bleedout)
+event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	Actor ThisActor = Self.GetReference() as Actor
+	SpellsToEquip[0] = ThisActor.GetEquippedSpell(0) ;Keep as unrolled loop just in case, since this fires often
+	SpellsToEquip[1] = ThisActor.GetEquippedSpell(1)
+	SpellsToEquip[2] = ThisActor.GetEquippedSpell(2)
+	SpellsToEquip[3] = ThisActor.GetEquippedSpell(3)
+	ShoutToEquip = ThisActor.GetEquippedShout()
+endEvent
 
 ;Bleedout handling
 event OnEnterBleedout()
@@ -93,6 +110,18 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 	float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
 	if (adjHealth > 0.0)
 		ThisActor.DamageActorValue("Health", adjHealth)
+	endif
+
+	;Re-equip our previously equipped spells (fixes spell weirdness on getting up from bleedout)
+	int i = SpellsToEquip.Length
+	while (i)
+		i -= 1
+		if (SpellsToEquip[i])
+			ThisActor.EquipSpell(SpellsToEquip[i], i)
+		endif
+	endwhile
+	if (ShoutToEquip)
+		ThisActor.EquipShout(ShoutToEquip)
 	endif
 
 	;Fix broken ragdoll state!
