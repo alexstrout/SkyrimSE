@@ -7,6 +7,7 @@ bool DeferredBump = false
 float CurrentBleedoutModHealthAmt = 0.0
 Spell[] SpellsToEquip
 Shout ShoutToEquip = None
+bool NoOnObjectEquipped = false
 
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
 
@@ -17,6 +18,9 @@ endEvent
 
 ;Record our currently equipped spells to re-equip later (fixes spell weirdness on getting up from bleedout)
 event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	if (NoOnObjectEquipped)
+		return
+	endif
 	Actor ThisActor = Self.GetReference() as Actor
 	SpellsToEquip[0] = ThisActor.GetEquippedSpell(0) ;Keep as unrolled loop just in case, since this fires often
 	SpellsToEquip[1] = ThisActor.GetEquippedSpell(1)
@@ -51,6 +55,21 @@ event OnEnterBleedout()
 		ThisActor.PushActorAway(ThisActor, 0.0)
 		DeferredBump = true
 	endif
+
+	;Re-equip our previously equipped spells (fixes spell weirdness on getting up from bleedout)
+	NoOnObjectEquipped = true
+	int i = SpellsToEquip.Length
+	while (i)
+		i -= 1
+		if (SpellsToEquip[i])
+			ThisActor.EquipSpell(SpellsToEquip[i], i)
+			Utility.Wait(0.01) ;Prevent barrage of equip audio
+		endif
+	endwhile
+	if (ShoutToEquip)
+		ThisActor.EquipShout(ShoutToEquip)
+	endif
+	NoOnObjectEquipped = false
 
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
@@ -110,18 +129,6 @@ function ExitBleedout(float HealthToHealTo = 10.0)
 	float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
 	if (adjHealth > 0.0)
 		ThisActor.DamageActorValue("Health", adjHealth)
-	endif
-
-	;Re-equip our previously equipped spells (fixes spell weirdness on getting up from bleedout)
-	int i = SpellsToEquip.Length
-	while (i)
-		i -= 1
-		if (SpellsToEquip[i])
-			ThisActor.EquipSpell(SpellsToEquip[i], i)
-		endif
-	endwhile
-	if (ShoutToEquip)
-		ThisActor.EquipShout(ShoutToEquip)
 	endif
 
 	;Fix broken ragdoll state!

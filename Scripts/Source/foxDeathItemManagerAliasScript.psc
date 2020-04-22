@@ -36,7 +36,7 @@ function EnumerateItemsToStrip(Actor akTarget)
 		i -= 1
 		akBaseItem = akTarget.GetNthForm(i)
 		if ((akBaseItem as Ammo || akBaseItem as Armor || akBaseItem as Weapon) \
-		&& (!akTarget || akTarget.IsEquipped(akBaseItem)) \
+		&& akTarget.IsEquipped(akBaseItem) \
 		&& akBaseItem.IsPlayable())
 			QueueItemsToStrip(akTarget, akBaseItem, GetItemCountFor(akTarget, akBaseItem))
 		endif
@@ -91,6 +91,7 @@ function StripAllItems(ObjectReference akDestContainer)
 				true, \
 				akDestContainer \
 			)
+			Utility.Wait(0.01) ;Prevent barrage of equip audio
 		endif
 		ItemsToStripContainer[ItemsToStripIndex] = None
 		ItemsToStripItem[ItemsToStripIndex] = None
