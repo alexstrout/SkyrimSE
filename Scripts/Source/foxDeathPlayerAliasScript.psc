@@ -77,7 +77,7 @@ endEvent
 event OnUpdate()
 	ExitBleedout()
 endEvent
-function ExitBleedout(float HealthToHealTo = 10.0, bool ClearItemsToStrip = true)
+function ExitBleedout()
 	;Abort our friendlies check if still running
 	;There's a miniscule chance of a race condition here if these fire on the same frame
 	;Worst case, we get up from bleedout while starting defeat scenario - no big deal
@@ -109,9 +109,7 @@ function ExitBleedout(float HealthToHealTo = 10.0, bool ClearItemsToStrip = true
 		;Allow us to drop items again
 		;Also clear all queued items for removal (cleans things up if nothing was taken)
 		DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
-		if (ClearItemsToStrip)
-			DeathQuest.ItemManagerAlias.ClearItemsToStrip()
-		endif
+		DeathQuest.ItemManagerAlias.ClearItemsToStrip()
 
 		;Heal to (nearly) full and clear NoBleedoutRecovery
 		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health") + BleedoutModHealthAmt)
@@ -128,9 +126,9 @@ function ExitBleedout(float HealthToHealTo = 10.0, bool ClearItemsToStrip = true
 
 	;For some reason, bleedout recovery sometimes restores all our health
 	;Though this doesn't matter as we now just heal to mostly full anyway
-	;Either way, to work around this, damage our health back down to HealthToHealTo
+	;Either way, to work around this, damage our health back down to a low value
 	;This has the nice side effect of proccing additional injuries from Wildcat etc.
-	float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
+	float adjHealth = ThisActor.GetActorValue("Health") - 10.0
 	if (adjHealth > 0.0)
 		ThisActor.DamageActorValue("Health", adjHealth)
 	endif

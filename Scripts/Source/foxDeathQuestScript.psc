@@ -94,12 +94,13 @@ function HandleDeath()
 	Utility.Wait(7.0)
 
 	;Actually strip equipment
+	;This must be done before we exit bleedout, since we ClearItemsToStrip there (in case this didn't happen)
 	ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
 	ItemManagerAlias.StripAllItems(VendorChest)
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	PlayerActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
-	PlayerAlias.ExitBleedout(30.0, false)
+	PlayerAlias.ExitBleedout()
 	Utility.Wait(2.0)
 	while (PlayerActor.IsBleedingOut())
 		Utility.Wait(1.0)
