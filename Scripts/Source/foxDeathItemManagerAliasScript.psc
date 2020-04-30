@@ -73,6 +73,29 @@ function QueueItemsToStrip(ObjectReference akContainer, Form akBaseItem, int aiI
 	ItemsToStripLock = false
 endFunction
 
+;Clear all items from all containers queued in ItemsToStrip
+function ClearItemsToStrip()
+	bool FullClear = false
+	while (ItemsToStripLock)
+		;On the off chance we're somehow jammed in a wait lock, forcefully clear this jam
+		;Debug.Trace("foxDeath - ClearItemsToStrip WaitLock")
+		ItemsToStripLock = false
+		FullClear = true ;Just in case
+		Utility.Wait(2.0)
+	endwhile
+	ItemsToStripLock = true
+	if (FullClear)
+		ItemsToStripIndex = ItemsToStripContainer.Length
+	endif
+	while (ItemsToStripIndex)
+		ItemsToStripIndex -= 1
+		ItemsToStripContainer[ItemsToStripIndex] = None
+		ItemsToStripItem[ItemsToStripIndex] = None
+		ItemsToStripCount[ItemsToStripIndex] = 0
+	endwhile
+	ItemsToStripLock = false
+endFunction
+
 ;Strip all items from all containers queued in ItemsToStrip
 function StripAllItems(ObjectReference akDestContainer)
 	while (ItemsToStripLock)
