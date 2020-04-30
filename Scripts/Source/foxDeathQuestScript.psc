@@ -136,8 +136,10 @@ function HandleDeath()
 
 	;Oops! We dragged player somewhere unsafe, guess we can help fight
 	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
+	;Or, you know, they've been clobbered and are bleeding out again
 	while (VendorActor.IsInCombat() \
-	|| VendorActor.IsInDialogueWithPlayer())
+	|| VendorActor.IsInDialogueWithPlayer() \
+	|| PlayerActor.IsBleedingOut())
 		Utility.Wait(5.0)
 	endwhile
 	Utility.Wait(10.0)
