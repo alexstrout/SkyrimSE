@@ -133,12 +133,16 @@ function ExitBleedout()
 		ThisActor.DamageActorValue("Health", adjHealth)
 	endif
 
+	;Fix eyes stuck shut - we should never be mounted right now, but check just in case
+	if (!ThisActor.IsOnMount())
+		ThisActor.QueueNiNodeUpdate()
+	endif
+
 	;Fix broken ragdoll state!
 	if (DeferredBump)
 		DeferredBump = false
 		Utility.Wait(1.0)
 		ThisActor.PushActorAway(ThisActor, 0.0)
-		ThisActor.QueueNiNodeUpdate() ;Fixes eyes stuck shut?
 	endif
 endFunction
 function AdjustBleedoutModHealthAmt(float AdjAmount = 0.0)

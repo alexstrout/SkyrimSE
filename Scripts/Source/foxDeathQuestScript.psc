@@ -131,6 +131,7 @@ function HandleDeath()
 	;Signal vendor to approach, and fade in
 	RequestedVendorAIState = 2
 	VendorActor.EvaluatePackage()
+	VendorActor.SetLookAt(PlayerActor)
 	PlayerAlias.GoToState("")
 	FadeManagerAlias.FadeIn()
 	Utility.Wait(5.0)
@@ -138,16 +139,23 @@ function HandleDeath()
 	;Oops! We dragged player somewhere unsafe, guess we can help fight
 	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
 	;Or, you know, they've been clobbered and are bleeding out again
-	while (VendorActor.IsInCombat() \
-	|| VendorActor.IsInDialogueWithPlayer() \
-	|| PlayerActor.IsBleedingOut())
+	int WaitChecksRemaining = 2
+	while (WaitChecksRemaining)
+		;Debug.Notification("foxDeath - HandleDeath WaitChecksRemaining " + WaitChecksRemaining)
 		Utility.Wait(5.0)
+		if (VendorActor.IsInCombat() \
+		|| VendorActor.IsInDialogueWithPlayer() \
+		|| PlayerActor.IsBleedingOut())
+			WaitChecksRemaining = 3
+		else
+			WaitChecksRemaining -= 1
+		endif
 	endwhile
-	Utility.Wait(10.0)
 
 	;I must go, my planet needs me
 	RequestedVendorAIState = 3
 	VendorActor.EvaluatePackage()
+	VendorActor.ClearLookAt()
 	Utility.Wait(10.0)
 	PlayerAlias.RegisterForSingleLOSLost(PlayerActor, VendorActor)
 endFunction
