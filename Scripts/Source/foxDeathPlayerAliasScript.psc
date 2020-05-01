@@ -210,6 +210,11 @@ endFunction
 bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
 	Actor ThisActor = Self.GetReference() as Actor
 	if (ThisActor && VendorActor)
+		;Do this first to snap vendor to navmesh - good failsafe just in case
+		VendorActor.Disable(false)
+		VendorActor.Enable(false)
+
+		;Disable again so we can be placed there without issue
 		VendorActor.Disable(false)
 		ThisActor.MoveTo(VendorActor, 0.0, 0.0, 0.0, abMatchRotation)
 		VendorActor.Enable(false)

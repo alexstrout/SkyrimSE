@@ -76,11 +76,11 @@ function HandleDeath()
 	ItemManagerAlias.EnumerateItemsToStripOnFollowers()
 
 	;Warp vendor to us - he should begin moving immediately on EvaluatePackage
-	RequestedVendorAIState = 1
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(PlayerActor, 0.0, 0.0, 0.0, true)
-	VendorAlias.ApplySpeedMult(200.0) ;Zoom!
+	VendorAlias.ApplySpeedMult(400.0) ;Zoom!
 	VendorActor.Enable(false)
+	RequestedVendorAIState = 1
 	VendorActor.EvaluatePackage()
 	VendorAlias.SetInvisible(true)
 	float StartingDist = VendorActor.GetDistance(PlayerActor)
@@ -107,13 +107,14 @@ function HandleDeath()
 	endwhile
 
 	;Engage!
-	VendorAlias.ApplySpeedMult(100.0)
+	VendorAlias.ApplySpeedMult(0.1)
 	WaitingForCellLoad = 2
 	while (WaitingForCellLoad)
 		;If we've arrived, try again to place us somewhere sane on the navmesh (this isn't guaranteed while cell is unloaded)
 		;If not, we'll just reset WaitingForCellLoad and go again to do the above
-		while (WaitingForCellLoad > 2 || !PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2))
-			WaitingForCellLoad = 3
+		;while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2) || WaitingForCellLoad > 2) ;This will hard-wait until OnCellLoad
+		while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2)) ;This won't - let's roll with this to be safe
+			WaitingForCellLoad = 3 ;Will be set to 2 on OnCellLoad, also note TryFullTeleport is latent and will at minimum wait a second
 		endwhile
 		;Debug.Trace("foxDeath - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
 		WaitingForCellLoad -= 1
@@ -129,6 +130,7 @@ function HandleDeath()
 	VendorAlias.SetInvisible(false)
 
 	;Signal vendor to approach, and fade in
+	VendorAlias.ApplySpeedMult(100.0)
 	RequestedVendorAIState = 2
 	VendorActor.EvaluatePackage()
 	VendorActor.SetLookAt(PlayerActor)
@@ -168,10 +170,10 @@ endFunction
 function PlayerAliasOnLostLOS(Actor akViewer, ObjectReference akTarget)
 	;This appears to be safe and always fires, even if we previously looked away or even zoned
 	;Debug.Notification("foxDeath - OnLostLOS")
-	RequestedVendorAIState = 0
 	akTarget.Disable(false)
 	akTarget.MoveToMyEditorLocation()
 	akTarget.Enable(false)
+	RequestedVendorAIState = 0
 	(akTarget as Actor).EvaluatePackage()
 	ProcessingDeath = false
 	;Debug.Notification("foxDeath - Processing finished!")
