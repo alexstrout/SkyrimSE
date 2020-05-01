@@ -2,13 +2,16 @@ Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
 {Derpy script that handles bleedout and other cool stuff}
 
 foxDeathQuestScript Property DeathQuest Auto
+FormList Property PlayerTransformQuestList Auto
 
 bool DeferredBump = false
 float CurrentBleedoutModHealthAmt = 0.0
 Spell[] SpellsToEquip
 Shout ShoutToEquip = None
 bool NoOnObjectEquipped = false
+Quest CurrentTransformationQuest = None
 
+float Property BleedoutUpdateTime = 20.0 AutoReadOnly
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
 
 ;Initialization stuff
@@ -29,6 +32,26 @@ event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	ShoutToEquip = ThisActor.GetEquippedShout()
 endEvent
 
+;Player transformation handling (werewolf, vampire, etc.)
+Quest function GetTransformationQuest()
+	int i = PlayerTransformQuestList.GetSize()
+	Quest SomeQuest
+	while (i)
+		i -= 1
+		SomeQuest = PlayerTransformQuestList.GetAt(i) as Quest
+		if (SomeQuest && SomeQuest.IsRunning())
+			return SomeQuest
+		endif
+	endwhile
+	return None
+endFunction
+function CancelTransformation(Actor ThisActor)
+	CurrentTransformationQuest.SetCurrentStageID(1) ;This should finish up the transform if unfinished
+	Utility.Wait(2.0) ;Wolf around for a few seconds
+	CurrentTransformationQuest.SetCurrentStageID(100) ;This should transform us back
+	CurrentTransformationQuest = None
+endFunction
+
 ;Bleedout handling
 event OnEnterBleedout()
 	;If we don't exist or already have NoBleedoutRecovery set (e.g. some other death-handling event is happening?), bail immediately
@@ -37,13 +60,24 @@ event OnEnterBleedout()
 		return
 	endif
 
-	;Player bleedout is weird, so SetNoBleedoutRecovery and just manually heal after some time
+	;Player bleedout is weird, so SetNoBleedoutRecovery and just manually heal with an update later
 	;This should be safe from interruption - no heals etc. can affect us in this state
 	ThisActor.SetNoBleedoutRecovery(true)
-	RegisterForSingleUpdate(20.0)
+
+	;Hide equipment UI etc. - should be safe to use here
+	Game.SetBeastForm(true)
 
 	;Actually, make sure potions etc. won't bring us out early
 	AdjustBleedoutModHealthAmt(-BleedoutModHealthAmt)
+
+	;Handle transformations here in a special branch - totally jank, but we'll hide it with fades at least
+	CurrentTransformationQuest = GetTransformationQuest()
+	if (CurrentTransformationQuest)
+		DeathQuest.FadeManagerAlias.FadeOut()
+		RegisterForSingleUpdate(BleedoutUpdateTime / 2.0) ;Ideally longer than ChangeFX times, to prevent weirdness
+		;DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime) ;No death handling for transformations
+		return
+	endif
 
 	;Immediately queue our items for removal, in case we try to cheat by unequipping during bleedout
 	;Also prevent us from dropping any items during this time
@@ -71,7 +105,9 @@ event OnEnterBleedout()
 	endif
 	NoOnObjectEquipped = false
 
+	;And we're off! Register our update to ExitBleedout later
 	;Also start checking for nearby friendlies via FollowerFinderQuest
+	RegisterForSingleUpdate(BleedoutUpdateTime)
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
 endEvent
 event OnUpdate()
@@ -115,6 +151,14 @@ function ExitBleedout()
 		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health") + BleedoutModHealthAmt)
 		ThisActor.SetNoBleedoutRecovery(false)
 
+		;Attempt to transition out of transformation
+		if (CurrentTransformationQuest)
+			CancelTransformation(ThisActor)
+		endif
+
+		;Restore equipment UI etc. - should be safe to use here
+		Game.SetBeastForm(false)
+
 		;We'll either be done bleeding out next run or need a retry...
 		RegisterForSingleUpdate(0.1)
 		return
@@ -143,6 +187,11 @@ function ExitBleedout()
 		DeferredBump = false
 		Utility.Wait(1.0)
 		ThisActor.PushActorAway(ThisActor, 0.0)
+	endif
+
+	;Fade back in from transformation handling if needed
+	if (GetState() != "ProcessingDeath")
+		DeathQuest.FadeManagerAlias.FadeIn()
 	endif
 endFunction
 function AdjustBleedoutModHealthAmt(float AdjAmount = 0.0)
