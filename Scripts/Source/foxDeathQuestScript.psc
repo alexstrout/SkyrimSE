@@ -12,12 +12,6 @@ foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 
 bool ProcessingDeath = false
 
-;0 = TryFullTeleport passed - In loaded cell and placed on navmesh - done
-;1 = TryFullTeleport passed - In loaded cell, waiting to be placed on navmesh
-;2 = Undetermined (starting state) - call TryFullTeleport, either 1 or 3 from here
-;3 = TryFullTeleport failed - In totally new cell, awaiting callback from OnCellLoad
-int WaitingForCellLoad = 0
-
 float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
 float Property VendorFinalPlacementDist = 512.0 AutoReadOnly
 
@@ -66,9 +60,7 @@ function HandleDeath()
 	;PlayerActor.Kill()
 
 	;Begin fading - this will also lock out player controls
-	;As such, we should first switch PlayerAlias to ProcessingDeath state to enable events for equipment stripping etc.
 	;At this point, we're considered committed to our fate, and should not be interrupted
-	PlayerAlias.GoToState("ProcessingDeath")
 	FadeManagerAlias.FadeOut()
 
 	;Figure out which equipment we should strip
@@ -107,14 +99,16 @@ function HandleDeath()
 	endwhile
 
 	;Engage!
-	VendorAlias.ApplySpeedMult(0.1)
-	WaitingForCellLoad = 2
+	VendorAlias.ApplySpeedMult(100.0)
+	RequestedVendorAIState = 0
+	VendorActor.EvaluatePackage()
+	int WaitingForCellLoad = 2
 	while (WaitingForCellLoad)
 		;If we've arrived, try again to place us somewhere sane on the navmesh (this isn't guaranteed while cell is unloaded)
 		;If not, we'll just reset WaitingForCellLoad and go again to do the above
-		;while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2) || WaitingForCellLoad > 2) ;This will hard-wait until OnCellLoad
-		while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2)) ;This won't - let's roll with this to be safe
-			WaitingForCellLoad = 3 ;Will be set to 2 on OnCellLoad, also note TryFullTeleport is latent and will at minimum wait a second
+		while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2))
+			WaitingForCellLoad = 2
+			Utility.Wait(1.0)
 		endwhile
 		;Debug.Trace("foxDeath - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
 		WaitingForCellLoad -= 1
@@ -130,11 +124,9 @@ function HandleDeath()
 	VendorAlias.SetInvisible(false)
 
 	;Signal vendor to approach, and fade in
-	VendorAlias.ApplySpeedMult(100.0)
 	RequestedVendorAIState = 2
 	VendorActor.EvaluatePackage()
 	VendorActor.SetLookAt(PlayerActor)
-	PlayerAlias.GoToState("")
 	FadeManagerAlias.FadeIn()
 	Utility.Wait(5.0)
 
@@ -159,15 +151,9 @@ function HandleDeath()
 	VendorActor.EvaluatePackage()
 	VendorActor.ClearLookAt()
 	Utility.Wait(10.0)
-	PlayerAlias.RegisterForSingleLOSLost(PlayerActor, VendorActor)
+	RegisterForSingleLOSLost(PlayerActor, VendorActor)
 endFunction
-
-;Forwarded from PlayerAlias
-function PlayerAliasOnCellLoad()
-	;Debug.Trace("foxDeath - PlayerAliasOnCellLoad WaitingForCellLoad " + WaitingForCellLoad)
-	WaitingForCellLoad = 2
-endFunction
-function PlayerAliasOnLostLOS(Actor akViewer, ObjectReference akTarget)
+event OnLostLOS(Actor akViewer, ObjectReference akTarget)
 	;This appears to be safe and always fires, even if we previously looked away or even zoned
 	;Debug.Notification("foxDeath - OnLostLOS")
 	akTarget.Disable(false)
@@ -177,4 +163,4 @@ function PlayerAliasOnLostLOS(Actor akViewer, ObjectReference akTarget)
 	(akTarget as Actor).EvaluatePackage()
 	ProcessingDeath = false
 	;Debug.Notification("foxDeath - Processing finished!")
-endFunction
+endEvent

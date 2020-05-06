@@ -8,8 +8,8 @@ bool DeferredBump = false
 float CurrentBleedoutModHealthAmt = 0.0
 Spell[] SpellsToEquip
 Shout ShoutToEquip = None
-bool NoOnObjectEquipped = false
 Quest CurrentTransformationQuest = None
+bool DeferredFadeIn = false
 
 float Property BleedoutUpdateTime = 20.0 AutoReadOnly
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
@@ -21,9 +21,6 @@ endEvent
 
 ;Record our currently equipped spells to re-equip later (fixes spell weirdness on getting up from bleedout)
 event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	if (NoOnObjectEquipped)
-		return
-	endif
 	Actor ThisActor = Self.GetReference() as Actor
 	SpellsToEquip[0] = ThisActor.GetEquippedSpell(0) ;Keep as unrolled loop just in case, since this fires often
 	SpellsToEquip[1] = ThisActor.GetEquippedSpell(1)
@@ -91,7 +88,7 @@ event OnEnterBleedout()
 	endif
 
 	;Re-equip our previously equipped spells (fixes spell weirdness on getting up from bleedout)
-	NoOnObjectEquipped = true
+	GoToState("NoOnObjectEquipped")
 	int i = SpellsToEquip.Length
 	while (i)
 		i -= 1
@@ -103,7 +100,7 @@ event OnEnterBleedout()
 	if (ShoutToEquip)
 		ThisActor.EquipShout(ShoutToEquip)
 	endif
-	NoOnObjectEquipped = false
+	GoToState("")
 
 	;And we're off! Register our update to ExitBleedout later
 	;Also start checking for nearby friendlies via FollowerFinderQuest
@@ -154,6 +151,7 @@ function ExitBleedout()
 		;Attempt to transition out of transformation
 		if (CurrentTransformationQuest)
 			CancelTransformation(ThisActor)
+			DeferredFadeIn = true
 		endif
 
 		;Restore equipment UI etc. - should be safe to use here
@@ -190,10 +188,13 @@ function ExitBleedout()
 	endif
 
 	;Fade back in from transformation handling if needed
-	if (GetState() != "ProcessingDeath")
+	if (DeferredFadeIn)
+		DeferredFadeIn = false
 		DeathQuest.FadeManagerAlias.FadeIn()
 	endif
 endFunction
+
+;Adjust (or reset) our CurrentBleedoutModHealthAmt
 function AdjustBleedoutModHealthAmt(float AdjAmount = 0.0)
 	Actor ThisActor = Self.GetReference() as Actor
 	if (AdjAmount)
@@ -227,17 +228,8 @@ bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
 		&& VendorActor.Is3DLoaded()
 endFunction
 
-;Registered from DeathQuest, just forward the callback
-event OnLostLOS(Actor akViewer, ObjectReference akTarget)
-	DeathQuest.PlayerAliasOnLostLOS(akViewer, akTarget)
-endEvent
-
-;Special state for processing our death, so that these events are ignored during normal gameplay
-;A sane prerequisite for this state is not having any control of our character (e.g. via FadeManager's fade)
-;This used to handle equipment removal and mattered more, but still saves on unnecessary OnCellLoad calls I guess!
-state ProcessingDeath
-	;Needed for DeathQuest, just forward the callback
-	event OnCellLoad()
-		DeathQuest.PlayerAliasOnCellLoad()
+;Simple state that blanks out OnObjectEquipped (so we don't process it when re-equipping spells in OnEnterBleedout)
+state NoOnObjectEquipped
+	event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	endEvent
 endState
