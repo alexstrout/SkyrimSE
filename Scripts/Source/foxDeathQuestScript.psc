@@ -13,7 +13,6 @@ foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 bool ProcessingDeath = false
 
 float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
-float Property VendorFinalPlacementDist = 512.0 AutoReadOnly
 
 ;Full death handling
 event OnUpdate()
@@ -116,51 +115,15 @@ function HandleDeath()
 	PlayerActor.SheatheWeapon() ;Fixes weirdness if we were mid-action on a previously equipped weapon
 	PlayerActor.SetGhost(false) ;Safe to get killed again
 
-	;Place vendor at a nice location in front of us
-	float aZ = PlayerActor.GetAngleZ()
-	VendorActor.Disable(false)
-	VendorActor.MoveTo(PlayerActor, VendorFinalPlacementDist * Math.Sin(aZ), VendorFinalPlacementDist * Math.Cos(aZ), 0.0, true)
-	VendorActor.Enable(false)
+	;My work here is done
 	VendorAlias.SetInvisible(false)
-
-	;Signal vendor to approach, and fade in
-	RequestedVendorAIState = 2
-	VendorActor.EvaluatePackage()
-	VendorActor.SetLookAt(PlayerActor)
-	FadeManagerAlias.FadeIn()
-	Utility.Wait(5.0)
-
-	;Oops! We dragged player somewhere unsafe, guess we can help fight
-	;Also, don't run off while the player is still blabbing (or we're fighting again somehow), how rude
-	;Or, you know, they've been clobbered and are bleeding out again
-	int WaitChecksRemaining = 2
-	while (WaitChecksRemaining)
-		;Debug.Notification("foxDeath - HandleDeath WaitChecksRemaining " + WaitChecksRemaining)
-		Utility.Wait(5.0)
-		if (VendorActor.IsInCombat() \
-		|| VendorActor.IsInDialogueWithPlayer() \
-		|| PlayerActor.IsBleedingOut())
-			WaitChecksRemaining = 3
-		else
-			WaitChecksRemaining -= 1
-		endif
-	endwhile
-
-	;I must go, my planet needs me
-	RequestedVendorAIState = 3
-	VendorActor.EvaluatePackage()
-	VendorActor.ClearLookAt()
-	Utility.Wait(10.0)
-	RegisterForSingleLOSLost(PlayerActor, VendorActor)
-endFunction
-event OnLostLOS(Actor akViewer, ObjectReference akTarget)
-	;This appears to be safe and always fires, even if we previously looked away or even zoned
-	;Debug.Notification("foxDeath - OnLostLOS")
-	akTarget.Disable(false)
-	akTarget.MoveToMyEditorLocation()
-	akTarget.Enable(false)
+	VendorActor.Disable(false)
+	VendorActor.MoveToMyEditorLocation()
+	VendorActor.Enable(false)
 	RequestedVendorAIState = 0
-	(akTarget as Actor).EvaluatePackage()
+	VendorActor.EvaluatePackage()
+
+	;Good to go!
+	FadeManagerAlias.FadeIn()
 	ProcessingDeath = false
-	;Debug.Notification("foxDeath - Processing finished!")
-endEvent
+endFunction

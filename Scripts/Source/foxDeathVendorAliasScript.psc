@@ -3,6 +3,11 @@ Scriptname foxDeathVendorAliasScript extends ReferenceAlias
 
 Spell Property InvisibilityAbility Auto
 
+;Trade when activated (no more voice, aww)
+event OnActivate(ObjectReference akActionRef)
+	(Self.GetReference() as Actor).ShowBarterMenu()
+endEvent
+
 ;Apply InvisibilityAbility depending on whether or not it's already applied
 function SetInvisible(bool ShouldBeInvisible)
 	Actor ThisActor = Self.GetReference() as Actor
