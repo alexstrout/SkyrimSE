@@ -166,6 +166,9 @@ function ExitBleedout()
 	;First, reset our mega-health back down to normal
 	AdjustBleedoutModHealthAmt()
 
+	;We are weak now (also applied within DeathQuest due to SetGhost)
+	DeathQuest.ApplyWeaknessSpell(ThisActor)
+
 	;For some reason, bleedout recovery sometimes restores all our health
 	;Though this doesn't matter as we now just heal to mostly full anyway
 	;Either way, to work around this, damage our health back down to a low value

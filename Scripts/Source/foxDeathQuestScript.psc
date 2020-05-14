@@ -10,6 +10,14 @@ ReferenceAlias Property VendorChestAlias Auto
 foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
 foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 
+;Set directly by foxDeathWeaknessEffectScript
+;Used by foxDeathSummonVendorEffectScript to determine if we can summon vendor, among other things
+;Also used here to stack effect without duplicating it in active effects
+ActiveMagicEffect Property ActiveWeaknessEffect Auto
+Spell Property WeaknessSpell Auto
+int CurrentWeaknessSpellDuration
+float CurrentWeaknessSpellMagnitude
+
 bool ProcessingDeath = false
 
 float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
@@ -115,6 +123,9 @@ function HandleDeath()
 	PlayerActor.SheatheWeapon() ;Fixes weirdness if we were mid-action on a previously equipped weapon
 	PlayerActor.SetGhost(false) ;Safe to get killed again
 
+	;We are weak now (must be applied here due to SetGhost)
+	ApplyWeaknessSpell(PlayerActor)
+
 	;My work here is done
 	VendorAlias.SetInvisible(false)
 	VendorActor.Disable(false)
@@ -126,4 +137,31 @@ function HandleDeath()
 	;Good to go!
 	FadeManagerAlias.FadeIn()
 	ProcessingDeath = false
+endFunction
+
+;Are we currently processing death?
+bool function IsProcessingDeath()
+	return ProcessingDeath
+endFunction
+
+;Apply WeaknessSpell, taking into account ActiveWeaknessEffect already being applied
+function ApplyWeaknessSpell(Actor TargetActor)
+	if (ActiveWeaknessEffect)
+		ActiveWeaknessEffect.Dispel()
+		while (ActiveWeaknessEffect)
+			Utility.Wait(0.1)
+		endwhile
+
+		;Stack additional duration and magnitude onto effect before reapplying
+		if (CurrentWeaknessSpellMagnitude < 80.0)
+			CurrentWeaknessSpellDuration += 180
+			CurrentWeaknessSpellMagnitude += 10.0
+		endif
+	else
+		CurrentWeaknessSpellDuration = 720 ;Should be 720s default in editor
+		CurrentWeaknessSpellMagnitude = 20.0 ;Should be 20.0 default in editor
+	endif
+	WeaknessSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration)
+	WeaknessSpell.SetNthEffectMagnitude(0, CurrentWeaknessSpellMagnitude)
+	TargetActor.DoCombatSpellApply(WeaknessSpell, TargetActor)
 endFunction
