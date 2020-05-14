@@ -1,11 +1,14 @@
 Scriptname foxDeathVendorAliasScript extends ReferenceAlias
 {Manages stuff for our cool death vendor guy}
 
+foxDeathQuestScript Property DeathQuest Auto
 Spell Property InvisibilityAbility Auto
 
 ;Trade when activated (no more voice, aww)
 event OnActivate(ObjectReference akActionRef)
-	(Self.GetReference() as Actor).ShowBarterMenu()
+	if (akActionRef == DeathQuest.PlayerAlias.GetReference())
+		(Self.GetReference() as Actor).ShowBarterMenu()
+	endif
 endEvent
 
 ;Apply InvisibilityAbility depending on whether or not it's already applied

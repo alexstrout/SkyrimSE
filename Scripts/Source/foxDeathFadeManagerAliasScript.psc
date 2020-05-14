@@ -35,6 +35,11 @@ state Fade
 		HoldFade()
 	endEvent
 
+	;Continue holding our fade after cell load
+	event OnCellLoad()
+		HoldFade()
+	endEvent
+
 	;Increment how many fades we're tracking
 	function FadeOut()
 		Fadeception += 1

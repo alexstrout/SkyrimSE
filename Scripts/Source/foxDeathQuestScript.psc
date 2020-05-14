@@ -9,6 +9,7 @@ foxDeathVendorAliasScript Property VendorAlias Auto
 ReferenceAlias Property VendorChestAlias Auto
 foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
 foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
+LocationAlias Property VendorDestinationAlias Auto
 
 ;Set directly by foxDeathWeaknessEffectScript
 ;Used by foxDeathSummonVendorEffectScript to determine if we can summon vendor, among other things

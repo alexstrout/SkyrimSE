@@ -167,7 +167,9 @@ function ExitBleedout()
 	AdjustBleedoutModHealthAmt()
 
 	;We are weak now (also applied within DeathQuest due to SetGhost)
-	DeathQuest.ApplyWeaknessSpell(ThisActor)
+	if (!DeathQuest.IsProcessingDeath())
+		DeathQuest.ApplyWeaknessSpell(ThisActor)
+	endif
 
 	;For some reason, bleedout recovery sometimes restores all our health
 	;Though this doesn't matter as we now just heal to mostly full anyway
@@ -230,6 +232,13 @@ bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
 		&& ThisActor.Is3DLoaded() \
 		&& VendorActor.Is3DLoaded()
 endFunction
+
+;Keep track of our last exterior location so vendor knows where to run
+event OnLocationChange(Location akOldLoc, Location akNewLoc)
+	if (akNewLoc && !Self.GetReference().IsInInterior())
+		DeathQuest.VendorDestinationAlias.ForceLocationTo(akNewLoc)
+	endif
+endEvent
 
 ;Simple state that blanks out OnObjectEquipped (so we don't process it when re-equipping spells in OnEnterBleedout)
 state NoOnObjectEquipped

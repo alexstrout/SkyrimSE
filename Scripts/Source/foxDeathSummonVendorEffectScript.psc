@@ -6,6 +6,7 @@ ImageSpaceModifier Property IntroIMOD Auto
 ImageSpaceModifier Property StaticIMOD Auto
 ImageSpaceModifier Property OutroIMOD Auto
 ShaderParticleGeometry Property StaticSPGD Auto
+Spell Property FamiliarVisuals Auto
 
 bool SummonVendor = false
 
@@ -34,6 +35,7 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
 		VendorActor.MoveTo(akCaster, VendorFinalPlacementDist * Math.Sin(aZ), VendorFinalPlacementDist * Math.Cos(aZ), 0.0, true)
 		VendorActor.SetAngle(0.0, 0.0, aZ + 180.0)
 		VendorActor.Enable(false)
+		VendorActor.AddSpell(FamiliarVisuals)
 	endif
 
 	;Apply our static effects
@@ -48,7 +50,7 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
 		VendorActor.SetLookAt(akCaster)
 	;Kick us out if nothing to do
 	else
-		Utility.Wait(1.0)
+		Utility.Wait(2.0)
 		Dispel()
 	endif
 endEvent
@@ -63,13 +65,16 @@ state EventsYesGood
 
 		;I must go, my planet needs me
 		Actor VendorActor = DeathQuest.VendorAlias.GetReference() as Actor
-		if (SummonVendor && VendorActor && !DeathQuest.IsProcessingDeath())
+		if (SummonVendor && VendorActor)
 			VendorActor.ClearLookAt()
-			VendorActor.Disable(false)
-			VendorActor.MoveToMyEditorLocation()
-			VendorActor.Enable(false)
-			DeathQuest.RequestedVendorAIState = 0
-			VendorActor.EvaluatePackage()
+			VendorActor.RemoveSpell(FamiliarVisuals)
+			if (!DeathQuest.IsProcessingDeath())
+				VendorActor.Disable(false)
+				VendorActor.MoveToMyEditorLocation()
+				VendorActor.Enable(false)
+				DeathQuest.RequestedVendorAIState = 0
+				VendorActor.EvaluatePackage()
+			endif
 		endif
 
 		;Remove our static effects
