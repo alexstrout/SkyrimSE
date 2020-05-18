@@ -4,12 +4,17 @@ Scriptname foxDeathQuestScript extends Quest Conditional
 int Property RequestedVendorAIState = 0 Auto Conditional
 
 Quest Property FollowerFinderQuest Auto
+GlobalVariable Property FollowerFinderMaxDist Auto
+
 foxDeathPlayerAliasScript Property PlayerAlias Auto
 foxDeathVendorAliasScript Property VendorAlias Auto
 ReferenceAlias Property VendorChestAlias Auto
 foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
 foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 LocationAlias Property VendorDestinationAlias Auto
+
+GlobalVariable Property DifficultySetting Auto
+MiscObject Property DifficultyGoldItem Auto
 
 ;Set directly by foxDeathWeaknessEffectScript
 ;Used by foxDeathSummonVendorEffectScript to determine if we can summon vendor, among other things
@@ -29,6 +34,15 @@ event OnUpdate()
 	;This could legitimately happen if we repeatedly enter bleedout before we'd finished ProcessingDeath
 	;If we're actually getting our ass kicked that much, a normal non-punishing bleedout is fine :)
 	if (ProcessingDeath || FollowerFinderQuest.IsRunning())
+		return
+	endif
+
+	;Quick distance checks - anything below 0 means disabled, 0 means always HandleDeath
+	float MaxDist = FollowerFinderMaxDist.GetValue()
+	if (MaxDist <= 0.0)
+		if (MaxDist == 0.0)
+			HandleDeath()
+		endif
 		return
 	endif
 
@@ -93,10 +107,32 @@ function HandleDeath()
 	endif
 	Utility.Wait(7.0)
 
+	;Handle pre-strip difficulty options
+	;-1 = Easy - no changes on death
+	;0 = Normal - clear previous Vendor gold on death
+	int Difficulty = DifficultySetting.GetValue() as int
+	if (Difficulty > -1)
+		VendorActor.RemoveItem(DifficultyGoldItem, 999999)
+		VendorChest.RemoveItem(DifficultyGoldItem, 999999)
+
+		;1 = Hard - clear previous items on death (souls-ish)
+		if (Difficulty > 0)
+			VendorActor.RemoveAllItems() ;Will keep quest items intact
+			VendorChest.RemoveAllItems()
+		endif
+	endif
+
 	;Actually strip equipment
 	;This must be done before we exit bleedout, since we ClearItemsToStrip there (in case this didn't happen)
 	ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
 	ItemManagerAlias.StripAllItems(VendorChest)
+
+	;Handle post-strip difficulty options
+	;2 = Brutal - clear all items on death
+	if (Difficulty > 1)
+		VendorActor.RemoveAllItems()
+		VendorChest.RemoveAllItems()
+	endif
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	PlayerActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
