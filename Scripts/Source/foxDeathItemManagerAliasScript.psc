@@ -1,7 +1,7 @@
 Scriptname foxDeathItemManagerAliasScript extends ReferenceAlias
 {Additional alias assigned to player that handles all item management for player and followers}
 
-Spell Property FollowerEquipmentRemovalAbility Auto
+Spell Property FollowerDetectSpell Auto
 
 ;ItemsToStrip containers must be same size
 ObjectReference[] ItemsToStripContainer
@@ -21,10 +21,7 @@ endEvent
 ;Call EnumerateItemsToStrip across all followers
 function EnumerateItemsToStripOnFollowers()
 	Actor ThisActor = Self.GetReference() as Actor
-	if (!ThisActor.HasSpell(FollowerEquipmentRemovalAbility))
-		ThisActor.AddSpell(FollowerEquipmentRemovalAbility)
-	endif
-	ThisActor.RemoveSpell(FollowerEquipmentRemovalAbility)
+	ThisActor.DoCombatSpellApply(FollowerDetectSpell, ThisActor)
 endFunction
 
 ;Enumerate all possible items to strip later via StripAllItems

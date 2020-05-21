@@ -87,7 +87,7 @@ function HandleDeath()
 
 	;Figure out which equipment we should strip
 	;ItemManagerAlias.EnumerateItemsToStrip(PlayerActor) ;This is actually done first in PlayerAlias::OnEnterBleedout
-	ItemManagerAlias.EnumerateItemsToStripOnFollowers()
+	ItemManagerAlias.EnumerateItemsToStripOnFollowers() ;Must be done before SetGhost, due to using DoCombatSpellApply
 
 	;Warp vendor to us - he should begin moving immediately on EvaluatePackage
 	VendorActor.Disable(false)

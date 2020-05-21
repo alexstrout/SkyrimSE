@@ -7,7 +7,6 @@ foxDeathQuestScript Property DeathQuest Auto
 event OnEffectStart(Actor akTarget, Actor akCaster)
 	;Debug.Trace("foxDeathEffect OnEffectStart\t" + akTarget + "\t" + akTarget.GetBaseObject().GetName() + "\t" + akCaster + "\t" + akCaster.GetBaseObject().GetName())
 	DeathQuest.ItemManagerAlias.EnumerateItemsToStrip(akTarget)
-	Dispel()
 endEvent
 
 ;event OnEffectFinish(Actor akTarget, Actor akCaster)
