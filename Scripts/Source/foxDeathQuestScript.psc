@@ -96,7 +96,7 @@ function HandleDeath()
 	;Warp vendor to us - he should begin moving immediately on EvaluatePackage
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(PlayerActor, 0.0, 0.0, 0.0, true)
-	VendorAlias.ApplySpeedMult(400.0) ;Zoom!
+	VendorAlias.ApplySpeedMult(800.0) ;Zoom!
 	VendorActor.Enable(false)
 	VendorAlias.SetInvisible(true)
 	VendorAlias.SetMovementState(1)
@@ -139,7 +139,8 @@ function HandleDeath()
 	;Engage!
 	VendorAlias.SetMovementState(0)
 	int WaitingForCellLoad = 2
-	while (WaitingForCellLoad)
+	int RemainingCombatChecks = 3
+	while (WaitingForCellLoad > 0)
 		;If we've arrived, try again to place us somewhere sane on the navmesh (this isn't guaranteed while cell is unloaded)
 		;If not, we'll just reset WaitingForCellLoad and go again to do the above
 		while (!PlayerAlias.TryFullTeleport(VendorActor, WaitingForCellLoad == 2))
@@ -150,17 +151,18 @@ function HandleDeath()
 		WaitingForCellLoad -= 1
 
 		;Do a combat check - if we end up in combat, we should attempt to relocate
-		if (!WaitingForCellLoad)
+		if (WaitingForCellLoad <= 0 && RemainingCombatChecks > 0)
 			SendModEvent("foxDeathDispelCalmEffect")
 			Utility.Wait(1.0)
 			if (PlayerActor.IsInCombat())
-				ApplyCalmSpell(PlayerActor, 8)
+				ApplyCalmSpell(PlayerActor, 12)
 				VendorAlias.SetMovementState(1)
-				Utility.Wait(4.0)
+				Utility.Wait(8.0)
 
 				;Again!
 				VendorAlias.SetMovementState(0)
 				WaitingForCellLoad = 2
+				RemainingCombatChecks -= 1
 			endif
 		endif
 	endwhile

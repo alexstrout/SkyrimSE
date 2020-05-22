@@ -33,7 +33,7 @@ endEvent
 Quest function GetTransformationQuest()
 	int i = PlayerTransformQuestList.GetSize()
 	Quest SomeQuest
-	while (i)
+	while (i > 0)
 		i -= 1
 		SomeQuest = PlayerTransformQuestList.GetAt(i) as Quest
 		if (SomeQuest && SomeQuest.IsRunning())
@@ -90,7 +90,7 @@ event OnEnterBleedout()
 	;Re-equip our previously equipped spells (fixes spell weirdness on getting up from bleedout)
 	GoToState("NoOnObjectEquipped")
 	int i = SpellsToEquip.Length
-	while (i)
+	while (i > 0)
 		i -= 1
 		if (SpellsToEquip[i])
 			ThisActor.EquipSpell(SpellsToEquip[i], i)
@@ -135,7 +135,7 @@ function ExitBleedout()
 
 		;Allow us to live / heal again :P
 		;We will actually force this to a massive positive amount to ensure we get up
-		if (CurrentBleedoutModHealthAmt < 0)
+		if (CurrentBleedoutModHealthAmt < 0.0)
 			AdjustBleedoutModHealthAmt(BleedoutModHealthAmt * 2.0)
 		endif
 

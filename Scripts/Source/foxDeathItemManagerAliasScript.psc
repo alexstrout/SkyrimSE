@@ -29,7 +29,7 @@ endFunction
 function EnumerateItemsToStrip(Actor akTarget)
 	int i = akTarget.GetNumItems()
 	Form akBaseItem
-	while (i && ItemsToStripIndex < ItemsToStripContainer.Length)
+	while (i > 0 && ItemsToStripIndex < ItemsToStripContainer.Length)
 		i -= 1
 		akBaseItem = akTarget.GetNthForm(i)
 		if ((akBaseItem as Ammo || akBaseItem as Armor || akBaseItem as Weapon) \
@@ -84,7 +84,7 @@ function ClearItemsToStrip()
 	if (FullClear)
 		ItemsToStripIndex = ItemsToStripContainer.Length
 	endif
-	while (ItemsToStripIndex)
+	while (ItemsToStripIndex > 0)
 		ItemsToStripIndex -= 1
 		ItemsToStripContainer[ItemsToStripIndex] = None
 		ItemsToStripItem[ItemsToStripIndex] = None
@@ -101,7 +101,7 @@ function StripAllItems(ObjectReference akDestContainer)
 	endwhile
 	ItemsToStripLock = true
 	;ItemsToStripIndex = ItemsToStripContainer.Length ;Not needed, ItemsToStripIndex will be inherently set to the number of items we want to strip
-	while (ItemsToStripIndex)
+	while (ItemsToStripIndex > 0)
 		ItemsToStripIndex -= 1
 		if (ItemsToStripContainer[ItemsToStripIndex])
 			;Debug.Trace("foxDeath - StripAllItems " + ItemsToStripContainer[ItemsToStripIndex] + "\t" + ItemsToStripItem[ItemsToStripIndex] + "(" + ItemsToStripCount[ItemsToStripIndex] + ")")
