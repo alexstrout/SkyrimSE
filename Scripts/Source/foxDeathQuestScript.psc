@@ -13,6 +13,7 @@ foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
 foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 LocationAlias Property VendorDestinationAlias Auto
 
+Spell Property CalmSpell Auto
 GlobalVariable Property DifficultySetting Auto
 MiscObject Property DifficultyGoldItem Auto
 
@@ -87,25 +88,18 @@ function HandleDeath()
 
 	;Figure out which equipment we should strip
 	;ItemManagerAlias.EnumerateItemsToStrip(PlayerActor) ;This is actually done first in PlayerAlias::OnEnterBleedout
-	ItemManagerAlias.EnumerateItemsToStripOnFollowers() ;Must be done before SetGhost, due to using DoCombatSpellApply
+	ItemManagerAlias.EnumerateItemsToStripOnFollowers()
+
+	;Calm all nearby actors - should be enough time to escape cleanly
+	ApplyCalmSpell(PlayerActor, 12)
 
 	;Warp vendor to us - he should begin moving immediately on EvaluatePackage
 	VendorActor.Disable(false)
 	VendorActor.MoveTo(PlayerActor, 0.0, 0.0, 0.0, true)
 	VendorAlias.ApplySpeedMult(400.0) ;Zoom!
 	VendorActor.Enable(false)
-	RequestedVendorAIState = 1
-	VendorActor.EvaluatePackage()
 	VendorAlias.SetInvisible(true)
-	float StartingDist = VendorActor.GetDistance(PlayerActor)
-	Utility.Wait(1.0)
-
-	;Switch to alternate package if we're not moving
-	if (Math.abs(VendorActor.GetDistance(PlayerActor) - StartingDist) < 2.0)
-		RequestedVendorAIState = 3
-		VendorActor.EvaluatePackage()
-	endif
-	Utility.Wait(7.0)
+	VendorAlias.SetMovementState(1)
 
 	;Handle pre-strip difficulty options
 	;-1 = Easy - no changes on death
@@ -137,15 +131,13 @@ function HandleDeath()
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	PlayerActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
 	PlayerAlias.ExitBleedout()
-	Utility.Wait(2.0)
+	Utility.Wait(8.0)
 	while (PlayerActor.IsBleedingOut())
 		Utility.Wait(1.0)
 	endwhile
 
 	;Engage!
-	VendorAlias.ApplySpeedMult(100.0)
-	RequestedVendorAIState = 0
-	VendorActor.EvaluatePackage()
+	VendorAlias.SetMovementState(0)
 	int WaitingForCellLoad = 2
 	while (WaitingForCellLoad)
 		;If we've arrived, try again to place us somewhere sane on the navmesh (this isn't guaranteed while cell is unloaded)
@@ -156,29 +148,52 @@ function HandleDeath()
 		endwhile
 		;Debug.Trace("foxDeath - HandleDeath WaitingForCellLoad " + WaitingForCellLoad)
 		WaitingForCellLoad -= 1
+
+		;Do a combat check - if we end up in combat, we should attempt to relocate
+		if (!WaitingForCellLoad)
+			SendModEvent("foxDeathDispelCalmEffect")
+			Utility.Wait(1.0)
+			if (PlayerActor.IsInCombat())
+				ApplyCalmSpell(PlayerActor, 8)
+				VendorAlias.SetMovementState(1)
+				Utility.Wait(4.0)
+
+				;Again!
+				VendorAlias.SetMovementState(0)
+				WaitingForCellLoad = 2
+			endif
+		endif
 	endwhile
+
+	;We're done teleporting - begin cleaning up
 	PlayerActor.SheatheWeapon() ;Fixes weirdness if we were mid-action on a previously equipped weapon
 	PlayerActor.SetGhost(false) ;Safe to get killed again
-
-	;We are weak now (must be applied here due to SetGhost)
-	ApplyWeaknessSpell(PlayerActor)
+	ApplyWeaknessSpell(PlayerActor) ;Must be done after SetGhost
 
 	;My work here is done
+	VendorAlias.ApplySpeedMult(100.0)
 	VendorAlias.SetInvisible(false)
 	VendorActor.Disable(false)
 	VendorActor.MoveToMyEditorLocation()
 	VendorActor.Enable(false)
-	RequestedVendorAIState = 0
-	VendorActor.EvaluatePackage()
+	VendorAlias.SetMovementState(0)
 
 	;Good to go!
+	SendModEvent("foxDeathDispelCalmEffect")
 	FadeManagerAlias.FadeIn()
+	Utility.Wait(30.0) ;Give us a 30s grace period before allowing defeat again
 	ProcessingDeath = false
 endFunction
 
 ;Are we currently processing death?
 bool function IsProcessingDeath()
 	return ProcessingDeath
+endFunction
+
+;Apply CalmSpell with desired Duration
+function ApplyCalmSpell(Actor TargetActor, int Duration)
+	CalmSpell.SetNthEffectDuration(0, Duration)
+	TargetActor.DoCombatSpellApply(CalmSpell, TargetActor)
 endFunction
 
 ;Apply WeaknessSpell, taking into account ActiveWeaknessEffect already being applied

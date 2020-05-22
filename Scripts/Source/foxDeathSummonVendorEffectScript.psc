@@ -45,8 +45,7 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
 	;Signal vendor to approach
 	;May be more mysterious to just stand there? Dunno
 	if (SummonVendor)
-		DeathQuest.RequestedVendorAIState = 2
-		VendorActor.EvaluatePackage()
+		DeathQuest.VendorAlias.SetMovementState(2)
 		VendorActor.SetLookAt(akCaster)
 	;Kick us out if nothing to do
 	else
@@ -72,8 +71,7 @@ state EventsYesGood
 				VendorActor.Disable(false)
 				VendorActor.MoveToMyEditorLocation()
 				VendorActor.Enable(false)
-				DeathQuest.RequestedVendorAIState = 0
-				VendorActor.EvaluatePackage()
+				DeathQuest.VendorAlias.SetMovementState(0)
 			endif
 		endif
 
@@ -87,7 +85,7 @@ state EventsYesGood
 		Actor AggressorActor = akAggressor as Actor
 		if (AggressorActor)
 			Actor ThisActor = GetCasterActor()
-			if (ThisActor && AggressorActor.IsHostileToActor(GetCasterActor()))
+			if (ThisActor && AggressorActor.IsHostileToActor(ThisActor))
 				Dispel()
 			endif
 		endif

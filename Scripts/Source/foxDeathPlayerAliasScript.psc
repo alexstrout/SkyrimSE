@@ -136,7 +136,7 @@ function ExitBleedout()
 		;Allow us to live / heal again :P
 		;We will actually force this to a massive positive amount to ensure we get up
 		if (CurrentBleedoutModHealthAmt < 0)
-			AdjustBleedoutModHealthAmt(BleedoutModHealthAmt * 2)
+			AdjustBleedoutModHealthAmt(BleedoutModHealthAmt * 2.0)
 		endif
 
 		;Allow us to drop items again
@@ -225,6 +225,7 @@ bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
 		ThisActor.MoveTo(VendorActor, 0.0, 0.0, 0.0, abMatchRotation)
 		VendorActor.Enable(false)
 	endif
+	DeathQuest.FadeManagerAlias.HoldFade() ;This is needed in case we warp to an already loaded cell (no OnCellLoad)
 	Utility.Wait(1.0)
 	return ThisActor && VendorActor \
 		&& ThisActor.GetParentCell() \

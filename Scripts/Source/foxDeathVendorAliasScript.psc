@@ -11,6 +11,26 @@ event OnActivate(ObjectReference akActionRef)
 	endif
 endEvent
 
+;Convenience function to set the requested movement state
+;Latent if RequestedAIState is 1 - checks to make sure we're actually moving
+function SetMovementState(int RequestedAIState)
+	Actor ThisActor = Self.GetReference() as Actor
+	DeathQuest.RequestedVendorAIState = RequestedAIState
+	ThisActor.EvaluatePackage()
+
+	if (RequestedAIState == 1)
+		Actor PlayerActor = DeathQuest.PlayerAlias.GetReference() as Actor
+		float StartingDist = ThisActor.GetDistance(PlayerActor)
+		Utility.Wait(1.0)
+
+		;Switch to alternate package if we're not moving
+		if (Math.abs(ThisActor.GetDistance(PlayerActor) - StartingDist) < 2.0)
+			DeathQuest.RequestedVendorAIState = 3
+			ThisActor.EvaluatePackage()
+		endif
+	endif
+endFunction
+
 ;Apply InvisibilityAbility depending on whether or not it's already applied
 function SetInvisible(bool ShouldBeInvisible)
 	Actor ThisActor = Self.GetReference() as Actor
