@@ -26,6 +26,7 @@ int CurrentWeaknessSpellDuration
 float CurrentWeaknessSpellMagnitude
 
 bool ProcessingDeath = false
+bool GracePeriod = false
 
 float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
 
@@ -34,7 +35,8 @@ event OnUpdate()
 	;Only allow one ProcessingDeath or FollowerFinderQuest thread
 	;This could legitimately happen if we repeatedly enter bleedout before we'd finished ProcessingDeath
 	;If we're actually getting our ass kicked that much, a normal non-punishing bleedout is fine :)
-	if (ProcessingDeath || FollowerFinderQuest.IsRunning())
+	;We'll also handle a separate "grace period" here
+	if (ProcessingDeath || GracePeriod || FollowerFinderQuest.IsRunning())
 		return
 	endif
 
@@ -183,8 +185,10 @@ function HandleDeath()
 	;Good to go!
 	SendModEvent("foxDeathDispelCalmEffect")
 	FadeManagerAlias.FadeIn()
-	Utility.Wait(30.0) ;Give us a 30s grace period before allowing defeat again
+	GracePeriod = true
 	ProcessingDeath = false
+	Utility.Wait(30.0) ;Give us a 30s grace period before allowing defeat again
+	GracePeriod = false
 endFunction
 
 ;Are we currently processing death?
