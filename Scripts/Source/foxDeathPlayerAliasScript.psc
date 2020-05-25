@@ -4,6 +4,7 @@ Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
 foxDeathQuestScript Property DeathQuest Auto
 FormList Property PlayerTransformQuestList Auto
 
+bool ProcessingBleedout = false
 bool DeferredBump = false
 float CurrentBleedoutModHealthAmt = 0.0
 Spell[] SpellsToEquip
@@ -70,9 +71,9 @@ event OnEnterBleedout()
 	;Handle transformations here in a special branch - totally jank, but we'll hide it with fades at least
 	CurrentTransformationQuest = GetTransformationQuest()
 	if (CurrentTransformationQuest)
-		DeathQuest.FadeManagerAlias.FadeOut()
 		RegisterForSingleUpdate(BleedoutUpdateTime / 2.0) ;Ideally longer than ChangeFX times, to prevent weirdness
 		;DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime) ;No death handling for transformations
+		DeathQuest.FadeManagerAlias.FadeOut()
 		return
 	endif
 
@@ -104,13 +105,26 @@ event OnEnterBleedout()
 
 	;And we're off! Register our update to ExitBleedout later
 	;Also start checking for nearby friendlies via FollowerFinderQuest
+	ProcessingBleedout = true
 	RegisterForSingleUpdate(BleedoutUpdateTime)
 	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
+
+	;Recycle this thread to poll bleedout state for other mods doing bleedout stuff
+	while (ProcessingBleedout && GetAdjustedBleedoutHealth() <= 0.0)
+		Utility.Wait(1.0)
+	endwhile
+	if (ProcessingBleedout)
+		UnRegisterForUpdate()
+		ExitBleedout(-1) ;Unknown why we exited early
+	endif
 endEvent
 event OnUpdate()
 	ExitBleedout()
 endEvent
-function ExitBleedout()
+function ExitBleedout(int ExitReason = 0)
+	;Signal we've processed a bleedout
+	ProcessingBleedout = false
+
 	;Abort our friendlies check if still running
 	;There's a miniscule chance of a race condition here if these fire on the same frame
 	;Worst case, we get up from bleedout while starting defeat scenario - no big deal
@@ -126,48 +140,47 @@ function ExitBleedout()
 		return
 	endif
 
-	;If we're still bleeding out...
-	if (ThisActor.IsBleedingOut())
-		;Determine if we should bump later to fix ragdoll-bleedout issues
-		if (!ThisActor.GetAnimationVariableBool("IsBleedingOut"))
-			DeferredBump = true
-		endif
-
-		;Allow us to live / heal again :P
-		;We will actually force this to a massive positive amount to ensure we get up
-		if (CurrentBleedoutModHealthAmt < 0.0)
-			AdjustBleedoutModHealthAmt(BleedoutModHealthAmt * 2.0)
-		endif
-
-		;Allow us to drop items again
-		;Also clear all queued items for removal (cleans things up if nothing was taken)
-		DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
-		DeathQuest.ItemManagerAlias.ClearItemsToStrip()
-
-		;Heal to (nearly) full and clear NoBleedoutRecovery
-		ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health") + BleedoutModHealthAmt)
-		ThisActor.SetNoBleedoutRecovery(false)
-
-		;Attempt to transition out of transformation
-		if (CurrentTransformationQuest)
-			CancelTransformation(ThisActor)
-			DeferredFadeIn = true
-		endif
-
-		;Restore equipment UI etc. - should be safe to use here
-		Game.SetBeastForm(false)
-
-		;We'll either be done bleeding out next run or need a retry...
-		RegisterForSingleUpdate(0.1)
-		return
+	;Determine if we should bump later to fix ragdoll-bleedout issues
+	if (!ThisActor.GetAnimationVariableBool("IsBleedingOut"))
+		DeferredBump = true
 	endif
+
+	;Allow us to live / heal again :P
+	;We will actually force this to a massive positive amount to ensure we get up
+	if (CurrentBleedoutModHealthAmt < 0.0)
+		AdjustBleedoutModHealthAmt(BleedoutModHealthAmt - CurrentBleedoutModHealthAmt)
+	else
+		AdjustBleedoutModHealthAmt(BleedoutModHealthAmt)
+	endif
+
+	;Allow us to drop items again
+	;Also clear all queued items for removal (cleans things up if nothing was taken)
+	DeathQuest.ItemManagerAlias.SetNoPlayerEquipmentDrop(false)
+	DeathQuest.ItemManagerAlias.ClearItemsToStrip()
+
+	;Heal to (nearly) full and clear NoBleedoutRecovery
+	ThisActor.RestoreActorValue("Health", ThisActor.GetBaseActorValue("Health"))
+	while (ThisActor.IsBleedingOut())
+		ThisActor.RestoreActorValue("Health", BleedoutModHealthAmt) ;Safety measure
+		Utility.Wait(0.1)
+	endwhile
+	ThisActor.SetNoBleedoutRecovery(false)
+
+	;Attempt to transition out of transformation
+	if (CurrentTransformationQuest)
+		CancelTransformation(ThisActor)
+		DeferredFadeIn = true
+	endif
+
+	;Restore equipment UI etc. - should be safe to use here
+	Game.SetBeastForm(false)
 
 	;If we're done bleeding out, clean up and bail
 	;First, reset our mega-health back down to normal
 	AdjustBleedoutModHealthAmt()
 
 	;We are weak now (also applied within DeathQuest due to SetGhost)
-	if (!DeathQuest.IsProcessingDeath())
+	if (!ExitReason)
 		DeathQuest.ApplyWeaknessSpell(ThisActor)
 	endif
 
@@ -175,9 +188,12 @@ function ExitBleedout()
 	;Though this doesn't matter as we now just heal to mostly full anyway
 	;Either way, to work around this, damage our health back down to a low value
 	;This has the nice side effect of proccing additional injuries from Wildcat etc.
-	float adjHealth = ThisActor.GetActorValue("Health") - 10.0
-	if (adjHealth > 0.0)
-		ThisActor.DamageActorValue("Health", adjHealth)
+	;However, skip this if we have an unknown ExitReason
+	if (ExitReason > -1)
+		float adjHealth = ThisActor.GetActorValue("Health") - 10.0
+		if (adjHealth > 0.0)
+			ThisActor.DamageActorValue("Health", adjHealth)
+		endif
 	endif
 
 	;Fix eyes stuck shut - we should never be mounted right now, but check just in case
@@ -209,6 +225,11 @@ function AdjustBleedoutModHealthAmt(float AdjAmount = 0.0)
 		ThisActor.ModActorValue("Health", -CurrentBleedoutModHealthAmt)
 		CurrentBleedoutModHealthAmt = 0
 	endif
+endFunction
+
+;Get our current health, adjusting for CurrentBleedoutModHealthAmt
+float function GetAdjustedBleedoutHealth()
+	return (Self.GetReference() as Actor).GetActorValue("Health") - CurrentBleedoutModHealthAmt
 endFunction
 
 ;Try a teleport, attempting to account for cell changes - returns true if cell appears loaded (more or less)

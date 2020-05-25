@@ -130,7 +130,7 @@ function HandleDeath()
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
 	PlayerActor.SetGhost(true) ;Should probably make sure we don't get killed before teleporting, oops!
-	PlayerAlias.ExitBleedout()
+	PlayerAlias.ExitBleedout(1) ;Can't apply weakness because of SetGhost (which should come first), so we'll do it later
 	Utility.Wait(8.0)
 	while (PlayerActor.IsBleedingOut())
 		Utility.Wait(1.0)
