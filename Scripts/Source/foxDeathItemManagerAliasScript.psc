@@ -9,6 +9,7 @@ Form[] ItemsToStripItem
 int[] ItemsToStripCount
 int ItemsToStripIndex = 0
 bool ItemsToStripLock = false
+int CurrentThreads = 0
 
 ;Initialization stuff
 event OnInit()
@@ -19,14 +20,21 @@ event OnInit()
 endEvent
 
 ;Call EnumerateItemsToStrip across all followers
+;Note this is latent until we think we're doing processing this
 function EnumerateItemsToStripOnFollowers()
+	CurrentThreads = 0
 	Actor ThisActor = Self.GetReference() as Actor
 	ThisActor.DoCombatSpellApply(FollowerDetectSpell, ThisActor)
+	Utility.Wait(1.0)
+	while (CurrentThreads > 0)
+		Utility.Wait(1.0)
+	endwhile
 endFunction
 
 ;Enumerate all possible items to strip later via StripAllItems
 ;Slower, but UnequipAll w/ OnObjectUnequipped event might remove stuff on accident that we don't want removed
 function EnumerateItemsToStrip(Actor akTarget)
+	CurrentThreads += 1
 	int i = akTarget.GetNumItems()
 	Form akBaseItem
 	while (i > 0 && ItemsToStripIndex < ItemsToStripContainer.Length)
@@ -38,6 +46,7 @@ function EnumerateItemsToStrip(Actor akTarget)
 			QueueItemsToStrip(akTarget, akBaseItem, GetItemCountFor(akTarget, akBaseItem))
 		endif
 	endwhile
+	CurrentThreads -= 1
 endFunction
 int function GetItemCountFor(ObjectReference akContainer, Form akBaseItem)
 	if (akBaseItem as Ammo)
