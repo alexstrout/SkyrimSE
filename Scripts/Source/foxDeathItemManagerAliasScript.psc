@@ -103,6 +103,7 @@ function ClearItemsToStrip()
 endFunction
 
 ;Strip all items from all containers queued in ItemsToStrip
+;This attempts to delicately do so in a way that doesn't queue too many item events
 function StripAllItems(ObjectReference akDestContainer)
 	while (ItemsToStripLock)
 		;Debug.Trace("foxDeath - StripAllItems WaitLock")
@@ -120,11 +121,14 @@ function StripAllItems(ObjectReference akDestContainer)
 				true, \
 				akDestContainer \
 			)
-			Utility.Wait(0.01) ;Prevent barrage of equip audio
+			Utility.Wait(0.01) ;Prevent barrage of equip audio / item events
 		endif
 		ItemsToStripContainer[ItemsToStripIndex] = None
 		ItemsToStripItem[ItemsToStripIndex] = None
 		ItemsToStripCount[ItemsToStripIndex] = 0
+		if (ItemsToStripIndex % 10 == 0)
+			Utility.Wait(0.1) ;Spread out events a bit
+		endif
 	endwhile
 	ItemsToStripLock = false
 endFunction

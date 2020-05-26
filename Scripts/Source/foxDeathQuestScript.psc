@@ -8,7 +8,7 @@ GlobalVariable Property FollowerFinderMaxDist Auto
 
 foxDeathPlayerAliasScript Property PlayerAlias Auto
 foxDeathVendorAliasScript Property VendorAlias Auto
-ReferenceAlias Property VendorChestAlias Auto
+foxDeathVendorChestAliasScript Property VendorChestAlias Auto
 foxDeathFadeManagerAliasScript Property FadeManagerAlias Auto
 foxDeathItemManagerAliasScript Property ItemManagerAlias Auto
 LocationAlias Property VendorDestinationAlias Auto
@@ -108,13 +108,12 @@ function HandleDeath()
 	;0 = Normal - clear previous Vendor gold on death
 	int Difficulty = DifficultySetting.GetValue() as int
 	if (Difficulty > -1)
-		VendorActor.RemoveItem(DifficultyGoldItem, 999999)
 		VendorChest.RemoveItem(DifficultyGoldItem, 999999)
 
 		;1 = Hard - clear previous items on death (souls-ish)
 		if (Difficulty > 0)
-			VendorActor.RemoveAllItems() ;Will keep quest items intact
-			VendorChest.RemoveAllItems()
+			;RemoveAllItems' abRemoveQuestItems does not seem to function here, so roll our own function
+			VendorChestAlias.RemoveAllNonQuestItems(VendorActor)
 		endif
 	endif
 
@@ -126,8 +125,7 @@ function HandleDeath()
 	;Handle post-strip difficulty options
 	;2 = Brutal - clear all items on death
 	if (Difficulty > 1)
-		VendorActor.RemoveAllItems()
-		VendorChest.RemoveAllItems()
+		VendorChestAlias.RemoveAllNonQuestItems(VendorActor)
 	endif
 
 	;Prepare to warp to vendor - exit bleedout, and hold until we're ready to move
