@@ -115,13 +115,13 @@ event OnEnterBleedout()
 	endwhile
 	if (ProcessingBleedout)
 		UnRegisterForUpdate()
-		ExitBleedout(-1) ;Unknown why we exited early
+		ExitBleedout(GetAdjustedBleedoutHealth(), -1) ;Unknown why we exited early
 	endif
 endEvent
 event OnUpdate()
 	ExitBleedout()
 endEvent
-function ExitBleedout(int ExitReason = 0)
+function ExitBleedout(float HealthToHealTo = 10.0, int ExitReason = 0)
 	;Signal we've processed a bleedout
 	ProcessingBleedout = false
 
@@ -188,12 +188,11 @@ function ExitBleedout(int ExitReason = 0)
 	;Though this doesn't matter as we now just heal to mostly full anyway
 	;Either way, to work around this, damage our health back down to a low value
 	;This has the nice side effect of proccing additional injuries from Wildcat etc.
-	;However, skip this if we have an unknown ExitReason
-	if (ExitReason > -1)
-		float adjHealth = ThisActor.GetActorValue("Health") - 10.0
-		if (adjHealth > 0.0)
-			ThisActor.DamageActorValue("Health", adjHealth)
-		endif
+	float adjHealth = ThisActor.GetActorValue("Health") - HealthToHealTo
+	if (adjHealth > 0.0)
+		ThisActor.DamageActorValue("Health", adjHealth)
+	elseif (adjHealth < 0.0)
+		ThisActor.RestoreActorValue("Health", -adjHealth)
 	endif
 
 	;Fix eyes stuck shut - we should never be mounted right now, but check just in case
