@@ -49,7 +49,12 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
 		VendorActor.SetLookAt(akCaster)
 	;Kick us out if nothing to do
 	else
-		Utility.Wait(2.0)
+		Utility.Wait(1.0)
+		foxDeathWeaknessEffectScript MessageEffect = DeathQuest.ActiveWeaknessEffect as foxDeathWeaknessEffectScript
+		if (MessageEffect)
+			MessageEffect.WeaknessEffectMessage.Show()
+		endif
+		Utility.Wait(1.0)
 		Dispel()
 	endif
 endEvent
