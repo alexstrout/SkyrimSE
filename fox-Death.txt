@@ -1,0 +1,72 @@
+Mirewalker - Alternate Death
+------
+Implements a simple alternate death mechanic with a focus on stability.
+------
+[b][color=#6fa8dc][size=4]Non-SE Version[/size][/color][/b]
+To Be Announced
+
+[color=#6fa8dc][size=4]Requirements[/size][/color]
+Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
+
+[color=#6fa8dc][size=4]Usage[/size][/color]
+Simply get rekt as normal; upon taking fatal damage, a bleedout state is triggered for 20 seconds.
+If no friendly actors are nearby during this time, bleedout instead transitions to a defeat state.
+
+Upon revive, a stacking (20...80%) penalty to Magicka and Stamina regen is inflicted.
+If defeated, you are also transported to a random location, and all equipped gear is confiscated.
+
+Once that penalty has expired, you may cast the Lesser Power "Echoes" to summon a spectral vendor.
+This vendor allows you to individually purchase back your party's equipment, in exchange for gold.
+
+[color=#6fa8dc][size=4]Additional Information[/size][/color]
+The bleedout penalty may be skipped by simply resting 4 hours in-game (or 1 extra hour per stack).
+However, since you can't rest near enemies, you may need resolve a bad situation first.
+
+If defeated, pathfinding is used for transportation to avoid otherwise inaccessible locations.
+Attempts are also made to avoid placing you into combat, retrying up to 3 times before giving up.
+
+Beast transformations (e.g. Beast Form) will simply be reverted without a defeat scenario.
+However, these are tricky to handle correctly; please see the Compatibility section below.
+
+By default, the vendor will hang on to every item ever confiscated from your party.
+This list may grow large over time; if you'd like to prune it, see the Configuration section below.
+
+[color=#6fa8dc][size=4]Configuration[/size][/color]
+foxDeath comes with a few config variables:
+[list][*][b]1foxDeathMaxDist[/b] - max ally "keep alive" distance when bleeding out [i](default 4096.0)[/i]
+[*][b]1foxDeathDifficulty[/b] - difficulty setting [i]-1 ... 2 (default 0)[/i]
+	[i]-1[/i] = Easy - no changes on defeat
+	[i]0[/i] = Normal - clear vendor gold on defeat
+	[i]1[/i] = Hard - clear previously confiscated non-quest equipment on defeat (souls-ish)
+	[i]2[/i] = Brutal - clear all confiscated non-quest equipment on defeat[/list]
+Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
+e.g. "set 1foxDeathDifficulty to 1" to set Hard mode difficulty.
+
+Setting 1foxDeathMaxDist to 0 will result in defeat upon every bleedout.
+Setting 1foxDeathMaxDist to -1 will completely disable the defeat scenario.
+
+While harder modes preserve quest items, other unique items may be lost! [b]Use with caution.[/b]
+
+[color=#6fa8dc][size=4]Compatibility[/size][/color]
+Should be compatible with anything that isn't also a bleedout overhaul mod. (e.g. Death Alternate)
+
+Mods with limited bleedout scenarios should work, provided they revive the player within 6 seconds.
+After 6 seconds, the defeat scenario may trigger, which could cause strange behavior.
+
+Time-limited transformations (e.g. Beast Form and Vampire Lord) need special care to work correctly.
+Mods that add these will need their controlling quest added to FLST "1foxDeathTransformationQuests".
+(That quest must also follow the vanilla quest pattern of Stage 1 = Transform, Stage 100 = Revert)
+
+[color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
+Make sure you're not bleeding out or under the bleedout penalty, then remove the plugin as normal.
+Optionally, use ReSaver (or similar) to remove any leftover references in your save:
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
+
+[b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include Quest Items.[/b] Please avoid doing this!
+
+[color=#6fa8dc][size=4]Known Issues[/size][/color]
+Surely none here
+------
+Revision History:
+1.0.0 (????-??-??):
+-- Initial release.
