@@ -3,6 +3,7 @@ Scriptname foxDeathPlayerAliasScript extends ReferenceAlias
 
 foxDeathQuestScript Property DeathQuest Auto
 FormList Property PlayerTransformQuestList Auto
+MusicType Property DeathMusic Auto
 
 bool ProcessingBleedout = false
 bool DeferredBump = false
@@ -57,6 +58,9 @@ event OnEnterBleedout()
 	if (!ThisActor || ThisActor.GetNoBleedoutRecovery() || CurrentBleedoutModHealthAmt)
 		return
 	endif
+
+	;Dun dunnn
+	DeathMusic.Add()
 
 	;Player bleedout is weird, so SetNoBleedoutRecovery and just manually heal with an update later
 	;This should be safe from interruption - no heals etc. can affect us in this state
