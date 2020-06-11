@@ -36,7 +36,8 @@ event OnUpdate()
 	;This could legitimately happen if we repeatedly enter bleedout before we'd finished ProcessingDeath
 	;If we're actually getting our ass kicked that much, a normal non-punishing bleedout is fine :)
 	;We'll also handle a separate "grace period" here
-	if (ProcessingDeath || GracePeriod || FollowerFinderQuest.IsRunning())
+	if (ProcessingDeath || FollowerFinderQuest.IsRunning() \
+	|| (GracePeriod && ActiveWeaknessEffect && ActiveWeaknessEffect.GetTimeElapsed() < 30.0))
 		return
 	endif
 
@@ -170,7 +171,7 @@ function HandleDeath()
 	;We're done teleporting - begin cleaning up
 	PlayerActor.SheatheWeapon() ;Fixes weirdness if we were mid-action on a previously equipped weapon
 	PlayerActor.SetGhost(false) ;Safe to get killed again
-	ApplyWeaknessSpell(PlayerActor) ;Must be done after SetGhost
+	ApplyWeaknessSpell(PlayerActor, true) ;Must be done after SetGhost, also apply grace period
 
 	;My work here is done
 	VendorAlias.ApplySpeedMult(100.0)
@@ -183,10 +184,7 @@ function HandleDeath()
 	;Good to go!
 	SendModEvent("foxDeathDispelCalmEffect")
 	FadeManagerAlias.FadeIn()
-	GracePeriod = true
 	ProcessingDeath = false
-	Utility.Wait(30.0) ;Give us a 30s grace period before allowing defeat again
-	GracePeriod = false
 endFunction
 
 ;Are we currently processing death?
@@ -201,7 +199,7 @@ function ApplyCalmSpell(Actor TargetActor, int Duration)
 endFunction
 
 ;Apply WeaknessSpell, taking into account ActiveWeaknessEffect already being applied
-function ApplyWeaknessSpell(Actor TargetActor)
+function ApplyWeaknessSpell(Actor TargetActor, bool AwardsGracePeriod = false)
 	if (ActiveWeaknessEffect)
 		ActiveWeaknessEffect.Dispel()
 		while (ActiveWeaknessEffect)
@@ -220,4 +218,57 @@ function ApplyWeaknessSpell(Actor TargetActor)
 	WeaknessSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration)
 	WeaknessSpell.SetNthEffectMagnitude(0, CurrentWeaknessSpellMagnitude)
 	TargetActor.DoCombatSpellApply(WeaknessSpell, TargetActor)
+	GracePeriod = AwardsGracePeriod
+endFunction
+
+;Uninstall!
+bool function UninstallMod()
+	Debug.Notification("foxDeath: Uninstalling, please wait...")
+
+	;Remove our weakness effect if it exists
+	if (ActiveWeaknessEffect)
+		ActiveWeaknessEffect.Dispel()
+	endif
+
+	;Stop FollowerFinderQuest if it's going
+	FollowerFinderQuest.Stop()
+
+	;Try to query our aliases - if any are messed up, recommend a quest restart so they can get filled
+	Actor PlayerActor = PlayerAlias.GetReference() as Actor
+	Actor VendorActor = VendorAlias.GetReference() as Actor
+	ObjectReference VendorChest = VendorChestAlias.GetReference()
+	if (!PlayerActor || !VendorActor || !VendorChest)
+		Debug.MessageBox("An error occurred - one of the following is invalid:" \
+			+ "\nPlayer: " + PlayerActor \
+			+ "\nVendor: " + VendorActor \
+			+ "\nChest: " + VendorChest \
+			+ "\n\nTry restarting the quest and trying again:" \
+			+ "\nstartquest 1foxDeathQuest")
+		return true
+	endif
+
+	;Wait if bleeding out or ProcessingDeath
+	while (PlayerActor.IsBleedingOut())
+		PlayerAlias.ExitBleedout(9999.0, 1)
+		Utility.Wait(2.0)
+	endwhile
+	if (ProcessingDeath)
+		return false ;Will retry in a few seconds
+	endif
+
+	;Clear all aliases to stop events, etc.
+	PlayerAlias.Clear()
+	VendorAlias.Clear()
+	VendorChestAlias.Clear()
+	FadeManagerAlias.Clear()
+	ItemManagerAlias.Clear()
+	VendorDestinationAlias.Clear()
+
+	;Return items back to player
+	VendorActor.RemoveAllItems(PlayerActor, true, true) ;Just in case
+	VendorChest.RemoveAllItems(PlayerActor, true, true)
+
+	;Done!
+	Debug.Notification("foxDeath: Uninstall complete!")
+	return true
 endFunction

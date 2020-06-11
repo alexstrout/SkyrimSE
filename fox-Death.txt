@@ -58,11 +58,12 @@ Mods that add these will need their controlling quest added to FLST "1foxDeathTr
 (That quest must also follow the vanilla quest pattern of Stage 1 = Transform, Stage 100 = Revert)
 
 [color=#6fa8dc][size=4]Uninstall Steps[/size][/color]
-Make sure you're not bleeding out or under the bleedout penalty, then remove the plugin as normal.
+Type "stopquest 1foxDeathQuest" in console (~ key) to recover all items and remove all effects.
+After, simply remove the plugin as normal.
 Optionally, use ReSaver (or similar) to remove any leftover references in your save:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
-[b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include Quest Items.[/b] Please avoid doing this!
+[b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
 
 [color=#6fa8dc][size=4]Known Issues[/size][/color]
 Surely none here
