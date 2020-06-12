@@ -182,7 +182,8 @@ function HandleDeath()
 	VendorAlias.SetMovementState(0)
 
 	;Good to go!
-	SendModEvent("foxDeathDispelCalmEffect")
+	;SendModEvent("foxDeathDispelCalmEffect")
+	ApplyCalmSpell(PlayerActor, 4) ;Actually, let us try to escape without getting insta-nuked on wakeup
 	FadeManagerAlias.FadeIn()
 	ProcessingDeath = false
 endFunction
