@@ -3,7 +3,7 @@ Mirewalker - Alternate Death
 Implements a simple alternate death mechanic with a focus on stability.
 ------
 [b][color=#6fa8dc][size=4]Non-SE Version[/size][/color][/b]
-To Be Announced
+To Be Decided
 
 [color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
@@ -64,9 +64,6 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
 [b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
-
-[color=#6fa8dc][size=4]Known Issues[/size][/color]
-Surely none here
 ------
 Revision History:
 1.0.0 (????-??-??):

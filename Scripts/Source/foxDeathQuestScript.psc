@@ -22,13 +22,17 @@ MiscObject Property DifficultyGoldItem Auto
 ;Also used here to stack effect without duplicating it in active effects
 ActiveMagicEffect Property ActiveWeaknessEffect Auto
 Spell Property WeaknessSpell Auto
-int CurrentWeaknessSpellDuration
-float CurrentWeaknessSpellMagnitude
+
+Message Property UninstallMessage Auto
+Message Property UninstallCompleteMessage Auto
+
+float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
 
 bool ProcessingDeath = false
 bool GracePeriod = false
 
-float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
+int CurrentWeaknessSpellDuration
+float CurrentWeaknessSpellMagnitude
 
 ;Full death handling
 event OnUpdate()
@@ -224,17 +228,20 @@ endFunction
 
 ;Uninstall!
 bool function UninstallMod()
-	Debug.Notification("foxDeath: Uninstalling, please wait...")
+	UninstallMessage.Show()
 
 	;Remove our weakness effect if it exists
 	if (ActiveWeaknessEffect)
 		ActiveWeaknessEffect.Dispel()
 	endif
 
-	;Stop FollowerFinderQuest if it's going
-	FollowerFinderQuest.Stop()
+	;Stop FollowerFinderQuest if it's running (shouldn't be needed, but just in case)
+	if (FollowerFinderQuest.IsRunning())
+		FollowerFinderQuest.Stop()
+	endif
 
 	;Try to query our aliases - if any are messed up, recommend a quest restart so they can get filled
+	;This should never happen, so it's fine staying as a Debug.MessageBox for useful diagnostics
 	Actor PlayerActor = PlayerAlias.GetReference() as Actor
 	Actor VendorActor = VendorAlias.GetReference() as Actor
 	ObjectReference VendorChest = VendorChestAlias.GetReference()
@@ -257,19 +264,14 @@ bool function UninstallMod()
 		return false ;Will retry in a few seconds
 	endif
 
-	;Clear all aliases to stop events, etc.
-	PlayerAlias.Clear()
-	VendorAlias.Clear()
-	VendorChestAlias.Clear()
-	FadeManagerAlias.Clear()
-	ItemManagerAlias.Clear()
-	VendorDestinationAlias.Clear()
-
 	;Return items back to player
-	VendorActor.RemoveAllItems(PlayerActor, true, true) ;Just in case
+	FadeManagerAlias.FadeIn() ;Shouldn't be needed, but just in case
+	VendorActor.RemoveAllItems(PlayerActor, true, true) ;Same here
+	VendorChestAlias.GoToState("NoEvents")
 	VendorChest.RemoveAllItems(PlayerActor, true, true)
+	VendorChestAlias.GoToState("")
 
 	;Done!
-	Debug.Notification("foxDeath: Uninstall complete!")
+	UninstallCompleteMessage.Show()
 	return true
 endFunction
