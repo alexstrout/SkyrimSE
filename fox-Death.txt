@@ -34,11 +34,11 @@ This list may grow large over time; if you'd like to prune it, see the Configura
 [color=#6fa8dc][size=4]Configuration[/size][/color]
 foxDeath comes with a few config variables:
 [list][*][b]1foxDeathMaxDist[/b] - max ally "keep alive" distance when bleeding out [i](default 4096.0)[/i]
-[*][b]1foxDeathDifficulty[/b] - difficulty setting [i]-1 ... 2 (default 0)[/i]
-	[i]-1[/i] = Easy - no changes on defeat
-	[i]0[/i] = Normal - clear vendor gold on defeat
-	[i]1[/i] = Hard - clear previously confiscated non-quest equipment on defeat (souls-ish)
-	[i]2[/i] = Brutal - clear all confiscated non-quest equipment on defeat[/list]
+[*][b]1foxDeathDifficulty[/b] - difficulty setting [i]-1 ... 2 (default 0)[/i][/list]
+[list]	[i]-1[/i] = Easy - no changes on defeat[/list]
+[list]	[i]0[/i] = Normal - clear vendor gold on defeat[/list]
+[list]	[i]1[/i] = Hard - clear previously confiscated non-quest equipment on defeat (souls-ish)[/list]
+[list]	[i]2[/i] = Brutal - clear all confiscated non-quest equipment on defeat[/list]
 Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
 e.g. "set 1foxDeathDifficulty to 1" to set Hard mode difficulty.
 
@@ -66,5 +66,5 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 [b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
 ------
 Revision History:
-1.0.0 (????-??-??):
+1.0.0 (2020-06-18):
 -- Initial release.
