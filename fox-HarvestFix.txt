@@ -15,7 +15,7 @@ This is covered in great detail on the following mod pages:
 [url=https://www.nexusmods.com/skyrim/mods/70656]wiseman303's Flora Fixes[/url] (OG Skyrim only?)
 wiseman303 wrote a [url=https://www.nexusmods.com/skyrim/articles/50547]Technical Details[/url] article explaining in more detail how these fixes worked.
 
-Brutal Flora Harvest Fix takes a different approach - attaching a script "hook" to ObjectReference.
+Brutal Flora Harvest Fix takes a different approach - inserting a script "hook" into ObjectReference.
 
 A modified ObjectReference script inserts a single function call into each of the following events:
 [list][*][b]OnActivate[/b] - to store our last harvest time (into a single new float value).
@@ -27,10 +27,12 @@ This has some advantages:
 [*]It is retroactive on existing saves, and may also be safely uninstalled at any time.
 [*]It is efficient, with any reference's OnCellAttach hook only firing once per save load.
 [*]It is lightweight, making no permanent changes to references or adding any event registrations.
+	(Non-instant respawn times do make a single saved change - see Save Notes below)
 [*]Like other harvest fixes, it decouples harvest respawning from cell resets.[/list]
 
 And also some disadvantages:
 [list][*]It only applies after a cell change (due to the scope of available events to the script).
+[*]Respawn times are instant the first time an object is harvested (same reason as above).
 [*]It adds a (negligible?) script overhead to the otherwise empty hooked events.
 [*]It would need an update if SKSE's ObjectReference.pex script ever changes (it hasn't in years).
 [*]The OnCellAttach hook can fail on references to null forms, dumping an error to Papyrus log.
@@ -55,8 +57,16 @@ And remove the following:
 [*]Data\Scripts\Source\foxHarvestFix.psc[/list]
 
 Should be safe to uninstall from saves at any time; no save cleaning necessary.
+
+[color=#6fa8dc][size=4]Save Notes[/size][/color]
+Non-instant respawn times set a special state on harvested objects to receive OnActivate events.
+This state may remain on these references after uninstall, but shouldn't have any in-game effect.
+Alternatively, the instant respawn time makes no changes whatsoever to saves (none are needed).
 ------
 Revision History:
+1.2.0 (2020-06-20):
+-- Fix reported issue "Raised stone gets repeatedly activated" - NOTE: This now makes a change to harvested references in save games, unless you use instant respawn time. See Save Notes in Description tab.
+
 1.1.0 (2019-07-31):
 -- Use 10-day default respawn time
 -- Add optional 3-day, 30-day, and instant respawn time versions (in a single zip)
