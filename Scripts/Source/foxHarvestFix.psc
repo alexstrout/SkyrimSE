@@ -32,5 +32,27 @@ function OnCellAttach(ObjectReference akRef, float afLastActivateTime = -1.0) gl
 		;Debug.Trace(akRef + " FormID " + akRef.GetFormID() + " was harvested OnCellAttach (" + akRef.GetBaseObject().GetName() + ")")
 		Utility.Wait(Math.abs((akRef.GetFormID() % 2048) / 640.0)) ;3.2s max wait time
 		akRef.SetHarvested(false)
+
+		;Listen for future OnActivate events on these refs only
+		;Otherwise, objects can get stuck repeatedly activating iff they:
+		;	A) Activate themselves from their own OnActivate
+		;	B) Do this from within a non-empty auto state
+		;	C) Depend on another state (or empty state) to "block" another OnActivate event
+		;	D) Don't define an empty OnActivate in said state (since it expects ObjectReference's to be empty)
+		;This keeps empty state's OnActivate blank so we don't break that contract (appears to be a Papyrus bug?)
+		;However, there are some drawbacks:
+		;	A) Potential incompatibility if another script explicitly checks for empty state on Flora / TreeObject forms
+		;		This is pretty unlikely though, due to the use case of states - never done in any vanilla scripts
+		;	B) Permanently tags this ref w/ foxHarvestFixReceiveOnActivate state
+		;		These could both be somewhat mitigated with reverting the state via OnActivate and OnCellDetach
+		;		However, OnCellDetach will generate a lot of nullptr errors due to the nature of the call
+		;	C) Very first initial harvest is still an instant respawn
+		;		This could be mitigated with an explicit GetBaseObject() as Flora or TreeObject check
+		;		However, I'd rather not add the extra logic overhead, as it would run on every reference
+		;Overall, setting this state should be harmless to savegames (no bloat, no tangible side-effects)
+		;That said, one could avoid ALL of this garbage by just using the instant-respawn variant :)
+		if (afLastActivateTime >= 0.0 && akRef.GetState() == "")
+			akRef.GoToState("foxHarvestFixReceiveOnActivate")
+		endif
 	endif
 endFunction

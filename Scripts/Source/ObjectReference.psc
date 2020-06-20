@@ -1,5 +1,5 @@
 Scriptname ObjectReference extends Form Hidden
-{fox: Brutal harvest fix lines 609, 611, 620 - based on SKSE 2.00.16}
+{fox: Brutal harvest fix lines 612...618, 625 - based on SKSE 2.00.17}
 bool FUNCTION rampRumble(float power = 0.5, float duration = 0.25, float falloff = 1600.0)
 	; Function to shake cam/controller based on distance from player
 	; should always be called on the source of the rumble, 
@@ -606,10 +606,15 @@ bool Function IsInLocation(Location akLocation)
 endFunction
 
 ; Event received when this reference is activated
-float foxHarvestFixLastActivateTime ;Simple variable to store our last harvest time, can be left at default init value (0) - save-friendly on addition or removal, see https://www.creationkit.com/index.php?title=Save_Files_Notes_(Papyrus)#Properties_and_Script_Variables
 Event OnActivate(ObjectReference akActionRef)
-	foxHarvestFixLastActivateTime = foxHarvestFix.OnActivate(Self, foxHarvestFixLastActivateTime) ;Hook OnActivate here if we'd like to track last harvest time (so that plants don't respawn until X days later)
 EndEvent
+
+float foxHarvestFixLastActivateTime ;Simple variable to store our last harvest time, can be left at default init value (0) - save-friendly on addition or removal, see https://www.creationkit.com/index.php?title=Save_Files_Notes_(Papyrus)#Properties_and_Script_Variables
+state foxHarvestFixReceiveOnActivate ;Special state set only for Flora / TreeObject forms
+	Event OnActivate(ObjectReference akActionRef)
+		foxHarvestFixLastActivateTime = foxHarvestFix.OnActivate(Self, foxHarvestFixLastActivateTime) ;Hook OnActivate here if we'd like to track last harvest time (so that plants don't respawn until X days later)
+	EndEvent
+endState
 
 ; Event received when this object has moved to an attached cell from a detached one
 Event OnAttachedToCell()
@@ -762,7 +767,7 @@ int Property Motion_ThinBoxIntertia = 6 AutoReadOnly
 int Property Motion_Character = 7 AutoReadOnly
 
 
-; SKSE64 additions built 2019-03-14 18:25:19.543000 UTC
+; SKSE64 additions built 2019-11-21 05:06:53.443000 UTC
 
 ; Container-only functions
 int Function GetNumItems() native
