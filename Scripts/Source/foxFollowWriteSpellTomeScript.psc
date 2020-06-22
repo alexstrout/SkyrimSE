@@ -134,6 +134,12 @@ event OnUpdate()
 		TargetSpell = None
 	endif
 
+	;Do the same if sheathed after casting
+	if (!Caster.IsWeaponDrawn())
+		TargetSpell = None
+		TargetBook = None
+	endif
+
 	;Otherwise, if we're still processing, try again in a second
 	if (TargetSpell)
 		RegisterForSingleUpdate(1.0)
