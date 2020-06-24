@@ -610,7 +610,7 @@ Event OnActivate(ObjectReference akActionRef)
 EndEvent
 
 float foxHarvestFixLastActivateTime ;Simple variable to store our last harvest time, can be left at default init value (0) - save-friendly on addition or removal, see https://www.creationkit.com/index.php?title=Save_Files_Notes_(Papyrus)#Properties_and_Script_Variables
-state foxHarvestFixReceiveOnActivate ;Special state set only for Flora / TreeObject forms
+state foxHarvestFixReceiveOnActivate ;Special state set only for harvested references
 	Event OnActivate(ObjectReference akActionRef)
 		foxHarvestFixLastActivateTime = foxHarvestFix.OnActivate(Self, foxHarvestFixLastActivateTime) ;Hook OnActivate here if we'd like to track last harvest time (so that plants don't respawn until X days later)
 	EndEvent

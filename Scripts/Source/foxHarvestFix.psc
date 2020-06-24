@@ -6,9 +6,9 @@ bool function IsValidHarvestRef(ObjectReference akRef, float afLastActivateTime)
 	;As IsHarvested is implemented for all ObjectReference types (hence "hooking" ObjectReference), we can simply call this function to determine if we:
 	;	A) Are a valid plant (e.g. Flora / TreeObject reference, or anything else that supports IsHarvested)
 	;	B) Have actually been harvested (no point in caring if we haven't!)
-	;Note: There is a weird issue where some ObjectReferences are apparently invalid nullptr forms and can't call native methods on themselves
-	;Thus, despite checking akRef, the IsHarvested() call can still fail. As our "hooked" functions would otherwise be empty calls anyway, this appears harmless (other than printing an error to log)
-	return akRef && akRef.IsHarvested() \
+	;Note: Some ObjectReferences may not actually reference anything, and thus can't call native methods on themselves - so IsHarvested() can fail
+	;As our "hooked" functions would otherwise be empty calls anyway, this appears harmless (other than printing an error to log)
+	return akRef.IsHarvested() \
 		&& (afLastActivateTime <= 0.0 || Utility.GetCurrentGameTime() > afLastActivateTime + 10.0) ;Adjust this last number to your desired respawn time in days (e.g. 3.0 = 3 days, 0.125 = 3 hours)
 endFunction
 
@@ -34,23 +34,17 @@ function OnCellAttach(ObjectReference akRef, float afLastActivateTime = -1.0) gl
 		akRef.SetHarvested(false)
 
 		;Listen for future OnActivate events on these refs only
-		;Otherwise, objects can get stuck repeatedly activating iff they:
+		;Otherwise, unrelated objects can get stuck repeatedly activating iff they:
 		;	A) Activate themselves from their own OnActivate
-		;	B) Do this from within a non-empty auto state
+		;	B) Do this from within a non-empty state
 		;	C) Depend on another state (or empty state) to "block" another OnActivate event
 		;	D) Don't define an empty OnActivate in said state (since it expects ObjectReference's to be empty)
-		;This keeps empty state's OnActivate blank so we don't break that contract (appears to be a Papyrus bug?)
-		;However, there are some drawbacks:
-		;	A) Potential incompatibility if another script explicitly checks for empty state on Flora / TreeObject forms
-		;		This is pretty unlikely though, due to the use case of states - never done in any vanilla scripts
-		;	B) Permanently tags this ref w/ foxHarvestFixReceiveOnActivate state
-		;		These could both be somewhat mitigated with reverting the state via OnActivate and OnCellDetach
-		;		However, OnCellDetach will generate a lot of nullptr errors due to the nature of the call
-		;	C) Very first initial harvest is still an instant respawn
-		;		This could be mitigated with an explicit GetBaseObject() as Flora or TreeObject check
-		;		However, I'd rather not add the extra logic overhead, as it would run on every reference
-		;Overall, setting this state should be harmless to savegames (no bloat, no tangible side-effects)
-		;That said, one could avoid ALL of this garbage by just using the instant-respawn variant :)
+		;This keeps empty state's OnActivate blank as expected so we don't break that contract
+		;There are some drawbacks:
+		;	A) Potential incompatibility if another script explicitly checks for empty state on this ref (unlikely, but worth noting)
+		;	B) This ref gets tagged w/ "foxHarvestFixReceiveOnActivate" state in saves (harmless aside from above point)
+		;	C) We get one instant respawn from initial harvests, since we're checking IsHarvested to arrive here in the first place
+		;Of course, you can avoid this entirely by just using the instant-respawn variant, which does not touch saves or OnActivate at all :P
 		if (afLastActivateTime >= 0.0 && akRef.GetState() == "")
 			akRef.GoToState("foxHarvestFixReceiveOnActivate")
 		endif
