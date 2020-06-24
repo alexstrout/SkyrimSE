@@ -26,13 +26,13 @@ This has some advantages:
 [list][*]It is universally compatible with any harvestable object in the game, vanilla or modded.
 [*]It is retroactive on existing saves, and may also be safely uninstalled at any time.
 [*]It is efficient, with any reference's OnCellAttach hook only firing once per save load.
-[*]It is lightweight, making no permanent changes to references or adding any event registrations.
-	(Non-instant respawn times do make a single saved change - see Save Notes below)
+[*]It is lightweight, making minimal/no changes to references and adding no event registrations.
+	(Specifically, non-instant respawn times make a single saved change - see Save Notes below)
 [*]Like other harvest fixes, it decouples harvest respawning from cell resets.[/list]
 
 And also some disadvantages:
 [list][*]It only applies after a cell change (due to the scope of available events to the script).
-[*]Respawn times are instant the first time an object is harvested (same reason as above).
+[*]Respawn times are instant the first time something is harvested (same reason as above).
 [*]It adds a (negligible?) script overhead to the otherwise empty hooked events.
 [*]It would need an update if SKSE's ObjectReference.pex script ever changes (it hasn't in years).
 [*]The OnCellAttach hook can fail on references to null forms, dumping an error to Papyrus log.
@@ -59,11 +59,16 @@ And remove the following:
 Should be safe to uninstall from saves at any time; no save cleaning necessary.
 
 [color=#6fa8dc][size=4]Save Notes[/size][/color]
-Non-instant respawn times set a special state on harvested objects to receive OnActivate events.
-This state may remain on these references after uninstall, but shouldn't have any in-game effect.
+Non-instant respawn times set a special state on harvested references to receive OnActivate events.
+This state may remain set on these references after uninstall, but shouldn't have any effect.
+
 Alternatively, the instant respawn time makes no changes whatsoever to saves (none are needed).
 ------
 Revision History:
+1.2.1 (2020-06-24):
+-- Tiny optimization on checking for harvested references
+-- Clean up script source documentation a bit
+
 1.2.0 (2020-06-20):
 -- Fix reported issue "Raised stone gets repeatedly activated" - NOTE: This now makes a change to harvested references in save games, unless you use instant respawn time. See Save Notes in Description tab.
 
