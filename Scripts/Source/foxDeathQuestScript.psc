@@ -218,32 +218,37 @@ endFunction
 ;Apply WeaknessSpell, taking into account ActiveWeaknessEffect already being applied
 ;Also applies new StrengthSpell in a similar manner - should probably be "ApplyDefeatSpell" but keeping for compatibility
 function ApplyWeaknessSpell(Actor TargetActor, bool AwardsGracePeriod = false)
-	if (ActiveWeaknessEffect || ActiveStrengthEffect)
-		if (ActiveWeaknessEffect)
-			ActiveWeaknessEffect.Dispel()
-		endif
-		if (ActiveStrengthEffect)
-			ActiveStrengthEffect.Dispel()
-		endif
-
-		;Stack additional duration and magnitude onto effect before reapplying
+	;Potentially stack additional duration and magnitude onto effects before reapplying
+	if (ActiveWeaknessEffect)
+		ActiveWeaknessEffect.Dispel() ;SetActiveDefeatEffect keeps this thread-safe
 		if (CurrentWeaknessSpellMagnitude < 80.0)
 			CurrentWeaknessSpellDuration += 180
 			CurrentWeaknessSpellMagnitude += 10.0
-			if (CurrentStrengthSpellMagnitude < 20.0)
-				CurrentStrengthSpellMagnitude += 2.0
-			endif
 		endif
 	else
 		CurrentWeaknessSpellDuration = 720 ;Should be 720s default in editor
 		CurrentWeaknessSpellMagnitude = 20.0 ;Should be 20.0 default in editor
-		CurrentStrengthSpellMagnitude = 10.0 ;Should be 10.0 default in editor
 	endif
 	WeaknessSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration)
 	WeaknessSpell.SetNthEffectMagnitude(0, CurrentWeaknessSpellMagnitude)
-	StrengthSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration) ;Same as CurrentWeaknessSpellDuration
+
+	;Only award half strength for non-defeat bleedouts
+	float StrengthMult = 1.0
+	if (!AwardsGracePeriod)
+		StrengthMult = 0.5
+	endif
+	if (ActiveStrengthEffect)
+		ActiveStrengthEffect.Dispel()
+		if (CurrentStrengthSpellMagnitude < 20.0)
+			CurrentStrengthSpellMagnitude += 2.0 * StrengthMult
+		endif
+	else
+		CurrentStrengthSpellMagnitude = 10.0 * StrengthMult ;Should be 10.0 default in editor
+	endif
+	StrengthSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration) ;Same duration as WeaknessSpell
 	StrengthSpell.SetNthEffectMagnitude(0, CurrentStrengthSpellMagnitude)
 	AdjustStrengthPerk()
+
 	TargetActor.DoCombatSpellApply(WeaknessSpell, TargetActor)
 	TargetActor.DoCombatSpellApply(StrengthSpell, TargetActor)
 	GracePeriod = AwardsGracePeriod
