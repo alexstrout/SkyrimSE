@@ -16,11 +16,22 @@ bool DeferredFadeIn = false
 float Property BleedoutUpdateTime = 20.0 AutoReadOnly
 float Property BleedoutModHealthAmt = 100000.0 AutoReadOnly
 
+;================
+;Mod Initialization and Updating
+;================
 ;Initialization stuff
 event OnInit()
 	SpellsToEquip = new Spell[4]
 endEvent
 
+;Reapply DeathQuest's custom magnitude for StrengthPerk (if applicable)
+event OnPlayerLoadGame()
+	DeathQuest.AdjustStrengthPerk()
+endEvent
+
+;================
+;Bleedout Bugfixes - Equipped Spells
+;================
 ;Record our currently equipped spells to re-equip later (fixes spell weirdness on getting up from bleedout)
 event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	Actor ThisActor = Self.GetReference() as Actor
@@ -31,7 +42,18 @@ event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	ShoutToEquip = ThisActor.GetEquippedShout()
 endEvent
 
+;Simple state that blanks out OnObjectEquipped (so we don't process it when re-equipping spells in OnEnterBleedout)
+state NoOnObjectEquipped
+	event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	endEvent
+endState
+
+;================
+;Bleedout Bugfixes - Transformations (see 1foxDeathPlayerTransformQuestList in CK)
+;================
 ;Player transformation handling (werewolf, vampire, etc.)
+;This is required for timed transformations (such as these) because SetRace won't work while in bleedout
+;If we didn't do this, and it tried to revert us during bleedout, we'd be stuck in a weird state
 Quest function GetTransformationQuest()
 	int i = PlayerTransformQuestList.GetSize()
 	Quest SomeQuest
@@ -51,6 +73,9 @@ function CancelTransformation(Actor ThisActor)
 	CurrentTransformationQuest = None
 endFunction
 
+;================
+;Bleedout Stuff
+;================
 ;Bleedout handling
 event OnEnterBleedout()
 	;If we don't exist or already have NoBleedoutRecovery set (e.g. some other death-handling event is happening?), bail immediately
@@ -235,6 +260,9 @@ float function GetAdjustedBleedoutHealth()
 	return (Self.GetReference() as Actor).GetActorValue("Health") - CurrentBleedoutModHealthAmt
 endFunction
 
+;================
+;Defeat Teleport Stuff
+;================
 ;Try a teleport, attempting to account for cell changes - returns true if cell appears loaded (more or less)
 ;Latent - waits a second to test if cell is relatively loaded
 bool function TryFullTeleport(Actor VendorActor, bool abMatchRotation = true)
@@ -264,9 +292,3 @@ event OnLocationChange(Location akOldLoc, Location akNewLoc)
 		DeathQuest.VendorDestinationAlias.ForceLocationTo(akNewLoc)
 	endif
 endEvent
-
-;Simple state that blanks out OnObjectEquipped (so we don't process it when re-equipping spells in OnEnterBleedout)
-state NoOnObjectEquipped
-	event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
-	endEvent
-endState

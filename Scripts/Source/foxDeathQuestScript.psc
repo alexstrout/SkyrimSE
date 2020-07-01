@@ -22,18 +22,27 @@ MiscObject Property DifficultyGoldItem Auto
 ;Also used here to stack effect without duplicating it in active effects
 ActiveMagicEffect Property ActiveWeaknessEffect Auto
 Spell Property WeaknessSpell Auto
+int CurrentWeaknessSpellDuration
+float CurrentWeaknessSpellMagnitude
+
+;Similar to above - note same duration, so shares the same duration var
+;Ideally this would be a nice array but I don't feel like writing save-updating functions for that
+ActiveMagicEffect Property ActiveStrengthEffect Auto
+Spell Property StrengthSpell Auto
+Perk Property StrengthPerk Auto ;Can get via MagicEffect, but for convenience
+float CurrentStrengthSpellMagnitude
 
 Message Property UninstallMessage Auto
 Message Property UninstallCompleteMessage Auto
 
-float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
-
 bool ProcessingDeath = false
 bool GracePeriod = false
 
-int CurrentWeaknessSpellDuration
-float CurrentWeaknessSpellMagnitude
+float Property FollowerFinderUpdateTime = 6.0 AutoReadOnly
 
+;================
+;Defeat Stuff
+;================
 ;Full death handling
 event OnUpdate()
 	;Only allow one ProcessingDeath or FollowerFinderQuest thread
@@ -197,6 +206,9 @@ bool function IsProcessingDeath()
 	return ProcessingDeath
 endFunction
 
+;================
+;Calm / Defeat Spell Stuff
+;================
 ;Apply CalmSpell with desired Duration
 function ApplyCalmSpell(Actor TargetActor, int Duration)
 	CalmSpell.SetNthEffectDuration(0, Duration)
@@ -204,28 +216,61 @@ function ApplyCalmSpell(Actor TargetActor, int Duration)
 endFunction
 
 ;Apply WeaknessSpell, taking into account ActiveWeaknessEffect already being applied
+;Also applies new StrengthSpell in a similar manner - should probably be "ApplyDefeatSpell" but keeping for compatibility
 function ApplyWeaknessSpell(Actor TargetActor, bool AwardsGracePeriod = false)
-	if (ActiveWeaknessEffect)
-		ActiveWeaknessEffect.Dispel()
-		while (ActiveWeaknessEffect)
-			Utility.Wait(0.1)
-		endwhile
+	if (ActiveWeaknessEffect || ActiveStrengthEffect)
+		if (ActiveWeaknessEffect)
+			ActiveWeaknessEffect.Dispel()
+		endif
+		if (ActiveStrengthEffect)
+			ActiveStrengthEffect.Dispel()
+		endif
 
 		;Stack additional duration and magnitude onto effect before reapplying
 		if (CurrentWeaknessSpellMagnitude < 80.0)
 			CurrentWeaknessSpellDuration += 180
 			CurrentWeaknessSpellMagnitude += 10.0
+			if (CurrentStrengthSpellMagnitude < 20.0)
+				CurrentStrengthSpellMagnitude += 2.0
+			endif
 		endif
 	else
 		CurrentWeaknessSpellDuration = 720 ;Should be 720s default in editor
 		CurrentWeaknessSpellMagnitude = 20.0 ;Should be 20.0 default in editor
+		CurrentStrengthSpellMagnitude = 10.0 ;Should be 10.0 default in editor
 	endif
 	WeaknessSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration)
 	WeaknessSpell.SetNthEffectMagnitude(0, CurrentWeaknessSpellMagnitude)
+	StrengthSpell.SetNthEffectDuration(0, CurrentWeaknessSpellDuration) ;Same as CurrentWeaknessSpellDuration
+	StrengthSpell.SetNthEffectMagnitude(0, CurrentStrengthSpellMagnitude)
+	AdjustStrengthPerk()
 	TargetActor.DoCombatSpellApply(WeaknessSpell, TargetActor)
+	TargetActor.DoCombatSpellApply(StrengthSpell, TargetActor)
 	GracePeriod = AwardsGracePeriod
 endFunction
 
+;Convenience function for applying our StrengthPerk magnitude
+;Called from ApplyWeaknessSpell and PlayerAlias' OnPlayerLoadGame
+function AdjustStrengthPerk()
+	StrengthPerk.SetNthEntryValue(0, 0, 1.0 + CurrentStrengthSpellMagnitude / 100.0)
+endFunction
+
+;Convenience function for foxDeathDefeatEffectScripts
+function SetActiveDefeatEffect(int DefeatEffectType, ActiveMagicEffect DefeatEffect, ActiveMagicEffect OldDefeatEffect = None)
+	if (DefeatEffectType == 0)
+		if (DefeatEffect || ActiveWeaknessEffect == OldDefeatEffect)
+			ActiveWeaknessEffect = DefeatEffect
+		endif
+	elseif (DefeatEffectType == 1)
+		if (DefeatEffect || ActiveStrengthEffect == OldDefeatEffect)
+			ActiveStrengthEffect = DefeatEffect
+		endif
+	endif
+endFunction
+
+;================
+;Uninstallation
+;================
 ;Uninstall!
 bool function UninstallMod()
 	UninstallMessage.Show()
@@ -233,6 +278,9 @@ bool function UninstallMod()
 	;Remove our weakness effect if it exists
 	if (ActiveWeaknessEffect)
 		ActiveWeaknessEffect.Dispel()
+	endif
+	if (ActiveStrengthEffect)
+		ActiveStrengthEffect.Dispel()
 	endif
 
 	;Stop FollowerFinderQuest if it's running (shouldn't be needed, but just in case)
