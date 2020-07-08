@@ -11,19 +11,21 @@ Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/u
 [color=#6fa8dc][size=4]Usage[/size][/color]
 Simply get rekt as normal; upon taking fatal damage, a bleedout state is triggered for 20 seconds.
 If no friendly actors are nearby during this time, bleedout instead transitions to a defeat state.
+If defeated, you are transported to a random nearby location, and all equipped gear is confiscated.
 
-Upon revive, a stacking (20...80%) penalty to Magicka and Stamina regen is inflicted.
-If defeated, you are also transported to a random location, and all equipped gear is confiscated.
+Upon revive, a stacking (20...80%) penalty to Magicka and Stamina regen is inflicted for 12 minutes.
+However, a stacking (5/10...20%) experience bonus is also granted for the same duration.
 
-Once that penalty has expired, you may cast the Lesser Power "Echoes" to summon a spectral vendor.
+Once those effects have expired, you may cast the Lesser Power "Echoes" to summon a spectral vendor.
 This vendor allows you to individually purchase back your party's equipment, in exchange for gold.
 
 [color=#6fa8dc][size=4]Additional Information[/size][/color]
-The bleedout penalty may be skipped by simply resting 4 hours in-game (or 1 extra hour per stack).
-However, since you can't rest near enemies, you may need resolve a bad situation first.
+The bleedout effects may be skipped by simply resting 4 hours in-game (or 1 extra hour per stack).
+However, since you can't rest near enemies, you may need resolve a bad situation first!
 
 If defeated, pathfinding is used for transportation to avoid otherwise inaccessible locations.
 Attempts are also made to avoid placing you into combat, retrying up to 3 times before giving up.
+This relocation should work in any worldspace, and prefers your last visited exterior if indoors.
 
 Beast transformations (e.g. Beast Form) will simply be reverted without a defeat scenario.
 However, these are tricky to handle correctly; please see the Compatibility section below.
@@ -49,6 +51,7 @@ While harder modes preserve quest items, other unique items may be lost! [b]Use 
 
 [color=#6fa8dc][size=4]Compatibility[/size][/color]
 Should be compatible with anything that isn't also a bleedout overhaul mod. (e.g. Death Alternate)
+Should also work in any worldspace, DLC or modded.
 
 Mods with limited bleedout scenarios should work, provided they revive the player within 6 seconds.
 After 6 seconds, the defeat scenario may trigger, which could cause strange behavior.
@@ -63,8 +66,12 @@ After, simply remove the plugin as normal.
 Optionally, use ReSaver (or similar) to remove any leftover references in your save:
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
-[b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost. [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
+[b]Warning:[/b] If you don't recover all items before removing the plugin, they will be permanently lost.
+[b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
 ------
 Revision History:
+1.1.0 (2020-07-07):
+-- Grant a stacking (10...20%) experience bonus on revive - this bonus is halved if not fully defeated on bleedout (e.g. revive due to nearby friendlies).
+
 1.0.0 (2020-06-18):
 -- Initial release.
