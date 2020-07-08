@@ -45,6 +45,11 @@ Parsing "LItemSpellTomesXXSchool" lists may not work if a mod adds any spell tom
 Unfortunately, this is a necessary constraint for proper performance when iterating (potentially very large) lists of spell tomes.
 ------
 Revision History:
+2.1.0 (2020-07-07):
+-- Cancel writing tome if hands are sheathed after casting
+-- Also fix casting time (0.5s instead of 0s, oops)
+-- Also set UI art to something more interesting
+
 2.0.0 (2019-07-13):
 -- Major rewrite - significantly increased performance and compatibility via spell tome vendor LeveledItem list iteration (IMPORTANT NOTE: Any compatibility patches that alter "1foxFollowSpellTomeList" should be remade - there's a chance they won't even be needed now)
 -- Add support for dual-cast-only spells by waiting at least 5 seconds, after which your most recently equipped spell will be used
