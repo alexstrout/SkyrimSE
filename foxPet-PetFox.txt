@@ -42,6 +42,9 @@ The bleedout state on animals is a little weird - since they have no bleedout an
 Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently unsure why this happens, but it can be worked around by saving and restarting the game, after which they will appear as expected.
 ------
 Revision History:
+1.14.1 (2020-07-07):
+-- Fix a minor goof where both foxes were set to min level 6 instead of 1 - they no longer single-handedly faceroll Bleak Falls Barrow at the start at the game
+
 r14:
 (changes downported from SE version)
 -- Improved script documentation
