@@ -10,6 +10,15 @@ event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 	if (akItemReference && akItemReference.GetNumReferenceAliases() > 0)
 		TrackedQuestItems.AddForm(akItemReference)
 	endif
+
+	if (akBaseItem == DeathQuest.DifficultyGoldItem \
+	&& !DeathQuest.AllowSellback.GetValue() as bool)
+		Self.GetReference().RemoveItem(akBaseItem, aiItemCount)
+		Actor VendorActor = DeathQuest.VendorAlias.GetReference() as Actor
+		if (VendorActor)
+			VendorActor.RemoveItem(akBaseItem) ;This simply triggers a shop UI update
+		endif
+	endif
 endEvent
 event OnItemRemoved(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akDestContainer)
 	if (TrackedQuestItems.HasForm(akItemReference))

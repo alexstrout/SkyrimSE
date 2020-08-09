@@ -41,12 +41,14 @@ foxDeath comes with a few config variables:
 [list]	[i]0[/i] = Normal - clear vendor gold on defeat[/list]
 [list]	[i]1[/i] = Hard - clear previously confiscated non-quest equipment on defeat (souls-ish)[/list]
 [list]	[i]2[/i] = Brutal - clear all confiscated non-quest equipment on defeat[/list]
+[list][*][b]1foxDeathAllowSellback[/b] - allow selling items back to vendor? [i]0/1 (default 0)[/i][/list]
 Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
 e.g. "set 1foxDeathDifficulty to 1" to set Hard mode difficulty.
 
 Setting 1foxDeathMaxDist to 0 will result in defeat upon every bleedout.
 Setting 1foxDeathMaxDist to -1 will completely disable the defeat scenario.
 
+Easy / Normal have no applicable differences unless 1foxDeathAllowSellback is enabled.
 While harder modes preserve quest items, other unique items may be lost! [b]Use with caution.[/b]
 
 [color=#6fa8dc][size=4]Compatibility[/size][/color]

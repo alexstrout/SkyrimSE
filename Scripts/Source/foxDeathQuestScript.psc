@@ -16,6 +16,7 @@ LocationAlias Property VendorDestinationAlias Auto
 Spell Property CalmSpell Auto
 GlobalVariable Property DifficultySetting Auto
 MiscObject Property DifficultyGoldItem Auto
+GlobalVariable Property AllowSellback Auto
 
 ;Set directly by foxDeathWeaknessEffectScript
 ;Used by foxDeathSummonVendorEffectScript to determine if we can summon vendor, among other things
