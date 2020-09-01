@@ -72,6 +72,9 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
 ------
 Revision History:
+1.2.0 (2020-09-01):
+-- Add new "1foxDeathAllowSellback" option - if disabled (default), you won't be able to "sell back" items to the vendor after purchasing your old equipment, as the vendor will no longer accrue gold from purchases. If enabled, everything functions identically to the previous v1.1.0 (you may sell back items to cover the cost of your old equipment).
+
 1.1.0 (2020-07-07):
 -- Grant a stacking (10...20%) experience bonus on revive - this bonus is halved if not fully defeated on bleedout (e.g. revive due to nearby friendlies).
 
