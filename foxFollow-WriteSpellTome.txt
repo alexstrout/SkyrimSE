@@ -4,8 +4,9 @@ Implements the ability to write spell tomes from equipped spells in exchange for
 ------
 Simply a port of my 2018 plugin from original Skyrim, now with some enhanced features. Enjoy!
 
-[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.0.0)[/size][/color][/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868]https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868[/url]
+[b][color=#6fa8dc][size=4]Original Non-SE Version (1.0.0)[/size][/color][/b]
+GitHub - [url=https://github.com/alexstrout/SkyrimClassic]https://github.com/alexstrout/SkyrimClassic[/url]
+Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868]https://steamcommunity.com/sharedfiles/filedetails/?id=1446025868[/url]
 
 [color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]

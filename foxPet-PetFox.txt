@@ -4,8 +4,9 @@ Adds Kitt and Sola, two simple pet foxes, to Dragonsreach.
 ------
 Simply a port of my old (2012!) plugin from original Skyrim. Enjoy!
 
-[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.14.0)[/size][/color][/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=13413]https://steamcommunity.com/sharedfiles/filedetails/?id=13413[/url]
+[b][color=#6fa8dc][size=4]Original Non-SE Version (1.14.0)[/size][/color][/b]
+GitHub - [url=https://github.com/alexstrout/SkyrimClassic]https://github.com/alexstrout/SkyrimClassic[/url]
+Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=13413]https://steamcommunity.com/sharedfiles/filedetails/?id=13413[/url]
 
 [color=#6fa8dc][size=4]Usage[/size][/color]
 Simply approach and talk to either fox, and they'll be recruited into your party.

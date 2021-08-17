@@ -4,11 +4,10 @@ Implements simple multi-follower support, with spell tome learning and catch-up 
 Supports any follower (or animal) that uses the vanilla DialogueFollower system.
 ------
 Simply a port of my 2018 plugin from original Skyrim. Enjoy!
-Although honestly, I'd check out [url=https://www.nexusmods.com/skyrimspecialedition/mods/18076]Nether's Follower Framework[/url], because it's insanely well-featured.
-It came out only a day(!) after I originally released this, and totally blows this out of the water. :P
 
-[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.1.0)[/size][/color][/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452]https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452[/url]
+[b][color=#6fa8dc][size=4]Original Non-SE Version (1.1.0)[/size][/color][/b]
+GitHub - [url=https://github.com/alexstrout/SkyrimClassic]https://github.com/alexstrout/SkyrimClassic[/url]
+Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452]https://steamcommunity.com/sharedfiles/filedetails/?id=1415931452[/url]
 
 [color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]

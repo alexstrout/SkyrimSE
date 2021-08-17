@@ -4,8 +4,9 @@ Disables archery auto-aiming.
 ------
 Simply a port of my old (2012!) plugin from original Skyrim, included for completeness.
 
-[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.3.0)[/size][/color][/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=15301]https://steamcommunity.com/sharedfiles/filedetails/?id=15301[/url]
+[b][color=#6fa8dc][size=4]Original Non-SE Version (1.3.0)[/size][/color][/b]
+GitHub - [url=https://github.com/alexstrout/SkyrimClassic]https://github.com/alexstrout/SkyrimClassic[/url]
+Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=15301]https://steamcommunity.com/sharedfiles/filedetails/?id=15301[/url]
 
 [color=#6fa8dc][size=4]Additional Information[/size][/color]
 Normally, Skyrim automatically aims your arrows toward enemies near your crosshair.

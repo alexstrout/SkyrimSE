@@ -4,8 +4,9 @@ Implements a number of tweaks to allow for smoother AI following in large groups
 ------
 Simply a port of my 2018 plugin from original Skyrim. Enjoy!
 
-[b][color=#6fa8dc][size=4]Original Non-SE Version - Steam Workshop (1.4.0)[/size][/color][/b]
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894]https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894[/url]
+[b][color=#6fa8dc][size=4]Original Non-SE Version (1.4.0)[/size][/color][/b]
+GitHub - [url=https://github.com/alexstrout/SkyrimClassic]https://github.com/alexstrout/SkyrimClassic[/url]
+Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894]https://steamcommunity.com/sharedfiles/filedetails/?id=1416666894[/url]
 
 [color=#6fa8dc][size=4]Additional Information[/size][/color]
 Tweaks the following GMSTs:
