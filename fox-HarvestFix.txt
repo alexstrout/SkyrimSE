@@ -5,6 +5,10 @@ Implements a simple brute-force approach to fixing Skyrim's harvest respawn bug.
 [b][color=#6fa8dc][size=4]Non-SE Version[/size][/color][/b]
 These files should actually work in original Skyrim as-is.
 
+[color=#93c47d][b][size=4]Alternate Fix - Native .NET Plugin (Recommended)[/size][/b][/color]
+Scrambled Bugs - [url=https://www.nexusmods.com/skyrimspecialedition/mods/43532]https://www.nexusmods.com/skyrimspecialedition/mods/43532[/url]
+(recommended instead of this fix; please see "Uninstall Steps" below if switching over)
+
 [color=#6fa8dc][size=4]Requirements[/size][/color]
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
