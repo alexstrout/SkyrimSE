@@ -6,6 +6,8 @@ int Property RequestedVendorAIState = 0 Auto Conditional
 Quest Property FollowerFinderQuest Auto
 GlobalVariable Property FollowerFinderMaxDist Auto
 
+GlobalVariable Property MinReviveTime Auto
+
 foxDeathPlayerAliasScript Property PlayerAlias Auto
 foxDeathVendorAliasScript Property VendorAlias Auto
 foxDeathVendorChestAliasScript Property VendorChestAlias Auto
@@ -98,6 +100,9 @@ function HandleDeath()
 	;PlayerAlias.Clear()
 	;Utility.Wait(0.5)
 	;PlayerActor.Kill()
+
+	;Oof, flop over dead
+	PlayerActor.PushActorAway(PlayerActor, 0.0)
 
 	;Begin fading - this will also lock out player controls
 	;At this point, we're considered committed to our fate, and should not be interrupted
@@ -194,6 +199,10 @@ function HandleDeath()
 	VendorActor.MoveToMyEditorLocation()
 	VendorActor.Enable(false)
 	VendorAlias.SetMovementState(0)
+
+	;Boop!
+	PlayerActor.PushActorAway(PlayerActor, 0.0)
+	Utility.Wait(1.0)
 
 	;Good to go!
 	;SendModEvent("foxDeathDispelCalmEffect")

@@ -36,6 +36,7 @@ This list may grow large over time; if you'd like to prune it, see the Configura
 [color=#6fa8dc][size=4]Configuration[/size][/color]
 foxDeath comes with a few config variables:
 [list][*][b]1foxDeathMaxDist[/b] - max ally "keep alive" distance when bleeding out [i](default 4096.0)[/i]
+[*][b]1foxDeathMinReviveTime[/b] - minimum time to allow mods to revive the player [i](default 0.0)[/i]
 [*][b]1foxDeathDifficulty[/b] - difficulty setting [i]-1 ... 2 (default 0)[/i][/list]
 [list]	[i]-1[/i] = Easy - no changes on defeat[/list]
 [list]	[i]0[/i] = Normal - clear vendor gold on defeat[/list]
@@ -55,8 +56,9 @@ While harder modes preserve quest items, other unique items may be lost! [b]Use 
 Should be compatible with anything that isn't also a bleedout overhaul mod. (e.g. Death Alternate)
 Should also work in any worldspace, DLC or modded.
 
-Mods with limited bleedout scenarios should work, provided they revive the player within 6 seconds.
-After 6 seconds, the defeat scenario may trigger, which could cause strange behavior.
+Mods with bleedout mechanics might work, provided 1foxDeathMinReviveTime is enabled (see above).
+For example, Wintersun's Arkayn Cycle can still revive you if this is set to 1 second or more.
+However, if you're unsure, it is safest to leave this at 0 seconds (disabled, default).
 
 Time-limited transformations (e.g. Beast Form and Vampire Lord) need special care to work correctly.
 Mods that add these will need their controlling quest added to FLST "1foxDeathTransformationQuests".
@@ -72,6 +74,10 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 [b]This may include quest items, which can permanently halt progress in your quests.[/b] Please avoid doing this!
 ------
 Revision History:
+1.3.0 (2024-xx-xx):
+-- Add some extra feedback on defeat by flopping over when actually dead (and subsequently waking up from a ragdoll state, instead of waking up already standing).
+-- Add new "1foxDeathMinReviveTime" option - if set to 0 (default), you can't be (accidentally) revived out of a bleedout state via healing. This fixes issues with mods that have more complex injury systems, such as Starfrost. Setting this to 0.1 seconds is roughly equal to v1.2.0's behavior.
+
 1.2.0 (2020-09-01):
 -- Add new "1foxDeathAllowSellback" option - if disabled (default), you won't be able to "sell back" items to the vendor after purchasing your old equipment, as the vendor will no longer accrue gold from purchases. If enabled, everything functions identically to the previous v1.1.0 (you may sell back items to cover the cost of your old equipment).
 

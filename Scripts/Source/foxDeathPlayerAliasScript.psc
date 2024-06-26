@@ -132,11 +132,19 @@ event OnEnterBleedout()
 	endif
 	GoToState("")
 
+	;Figure out our minimum revive time
+	float minReviveTime = DeathQuest.MinReviveTime.GetValue()
+
 	;And we're off! Register our update to ExitBleedout later
 	;Also start checking for nearby friendlies via FollowerFinderQuest
 	ProcessingBleedout = true
-	RegisterForSingleUpdate(BleedoutUpdateTime)
-	DeathQuest.RegisterForSingleUpdate(DeathQuest.FollowerFinderUpdateTime)
+	RegisterForSingleUpdate(minReviveTime + BleedoutUpdateTime)
+	DeathQuest.RegisterForSingleUpdate(minReviveTime + DeathQuest.FollowerFinderUpdateTime)
+
+	;Don't allow early revive if disabled
+	if (minReviveTime <= 0.0)
+		return
+	endif
 
 	;Recycle this thread to poll bleedout state for other mods doing bleedout stuff
 	while (ProcessingBleedout && GetAdjustedBleedoutHealth() <= 0.0)
