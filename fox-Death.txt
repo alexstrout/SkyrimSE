@@ -34,7 +34,9 @@ By default, the vendor will hang on to every item ever confiscated from your par
 This list may grow large over time; if you'd like to prune it, see the Configuration section below.
 
 [color=#6fa8dc][size=4]Configuration[/size][/color]
-foxDeath comes with a few config variables:
+All options can be configured via the SkyUI Mod Configuration Menu!
+
+However, you may also set these manually in the console (~ key):
 [list][*][b]1foxDeathMaxDist[/b] - max ally "keep alive" distance when bleeding out [i](default 4096.0)[/i]
 [*][b]1foxDeathMinReviveTime[/b] - minimum time to allow mods to revive the player [i](default 0.0)[/i]
 [*][b]1foxDeathDifficulty[/b] - difficulty setting [i]-1 ... 2 (default 0)[/i][/list]
@@ -43,7 +45,8 @@ foxDeath comes with a few config variables:
 [list]	[i]1[/i] = Hard - clear previously confiscated non-quest equipment on defeat (souls-ish)[/list]
 [list]	[i]2[/i] = Brutal - clear all confiscated non-quest equipment on defeat[/list]
 [list][*][b]1foxDeathAllowSellback[/b] - allow selling items back to vendor? [i]0/1 (default 0)[/i][/list]
-Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
+Use "set [b]someVar[/b] to [i]someVal[/i]" to adjust these.
+Use "help 1foxDeath 3" to see the current values on your save.
 e.g. "set 1foxDeathDifficulty to 1" to set Hard mode difficulty.
 
 Setting 1foxDeathMaxDist to 0 will result in defeat upon every bleedout.
@@ -77,6 +80,7 @@ Revision History:
 1.3.0 (2024-xx-xx):
 -- Add some extra feedback on defeat by flopping over when actually dead (and subsequently waking up from a ragdoll state, instead of waking up already standing).
 -- Add new "1foxDeathMinReviveTime" option - if set to 0 (default), you can't be (accidentally) revived out of a bleedout state via healing. This fixes issues with mods that have more complex injury systems, such as Starfrost. Setting this to 0.1 seconds is roughly equal to v1.2.0's behavior.
+-- Add MCM menu! Finally. :P
 
 1.2.0 (2020-09-01):
 -- Add new "1foxDeathAllowSellback" option - if disabled (default), you won't be able to "sell back" items to the vendor after purchasing your old equipment, as the vendor will no longer accrue gold from purchases. If enabled, everything functions identically to the previous v1.1.0 (you may sell back items to cover the cost of your old equipment).
