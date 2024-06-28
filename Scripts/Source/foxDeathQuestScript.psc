@@ -318,12 +318,12 @@ bool function UninstallMod()
 		return true
 	endif
 
-	;Wait if bleeding out or ProcessingDeath
+	;Wait if bleeding out or ProcessingDeath, or vendor is summoned
 	while (PlayerActor.IsBleedingOut())
 		PlayerAlias.ExitBleedout(9999.0, 1)
 		Utility.Wait(2.0)
 	endwhile
-	if (ProcessingDeath)
+	if (ProcessingDeath || RequestedVendorAIState > 0)
 		return false ;Will retry in a few seconds
 	endif
 

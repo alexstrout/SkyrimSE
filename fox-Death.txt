@@ -80,7 +80,7 @@ Revision History:
 1.3.0 (2024-xx-xx):
 -- Add some extra feedback on defeat by flopping over when actually dead (and subsequently waking up from a ragdoll state, instead of waking up already standing).
 -- Add new "1foxDeathMinReviveTime" option - if set to 0 (default), you can't be (accidentally) revived out of a bleedout state via healing. This fixes issues with mods that have more complex injury systems, such as Starfrost. Setting this to 0.1 seconds is roughly equal to v1.2.0's behavior.
--- Add MCM menu! Finally. :P
+-- Add SkyUI MCM support! Finally. :P
 
 1.2.0 (2020-09-01):
 -- Add new "1foxDeathAllowSellback" option - if disabled (default), you won't be able to "sell back" items to the vendor after purchasing your old equipment, as the vendor will no longer accrue gold from purchases. If enabled, everything functions identically to the previous v1.1.0 (you may sell back items to cover the cost of your old equipment).

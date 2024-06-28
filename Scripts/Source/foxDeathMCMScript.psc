@@ -20,6 +20,10 @@ int AllowSellbackToggleID
 bool AllowSellbackToggleValue = false
 bool Property AllowSellbackToggleDefaultValue = false AutoReadOnly
 
+int QuestActiveToggleID
+bool QuestActiveToggleValue = false
+bool Property QuestActiveToggleDefaultValue = true AutoReadOnly
+
 event OnConfigInit()
 	DifficultySettingList = new string[4]
 	DifficultySettingList[0] = " Easy "
@@ -30,6 +34,7 @@ endEvent
 
 event OnPageReset(string page)
 	SetCursorFillMode(TOP_TO_BOTTOM)
+	AddHeaderOption("Options")
 
 	MaxDistSliderValue = DeathQuest.FollowerFinderMaxDist.GetValue()
 	MaxDistSliderID = AddSliderOption("Maximum Revive Distance", MaxDistSliderValue, MaxDistSliderFormat)
@@ -46,6 +51,12 @@ event OnPageReset(string page)
 
 	AllowSellbackToggleValue = DeathQuest.AllowSellback.GetValue() as bool
 	AllowSellbackToggleID = AddToggleOption("Vendor Sellback", AllowSellbackToggleValue)
+
+	AddEmptyOption()
+	AddHeaderOption("Uninstall")
+
+	QuestActiveToggleValue = DeathQuest.IsRunning()
+	QuestActiveToggleID = AddToggleOption("Quest Running", QuestActiveToggleValue)
 endEvent
 
 event OnOptionHighlight(int option)
@@ -69,6 +80,11 @@ event OnOptionHighlight(int option)
 		SetInfoText("Allow selling items back to vendor?" \
 			+ "\nIf disabled, there is effectively no difference between Easy and Normal." \
 			+ "\nDefault: False")
+	elseif (option == QuestActiveToggleID)
+		SetInfoText("Quest running?" \
+			+ "\nTo uninstall, please first stop the quest by unchecking this toggle. (Takes effect on closing config menu.)" \
+			+ "\nThis will recover all items from the vendor and stop all effects. Please do this before uninstalling!" \
+			+ "\nDefault: True")
 	endif
 endEvent
 
@@ -79,7 +95,9 @@ event OnOptionDefault(int option)
 		OnOptionSliderAccept(option, ReviveTimeSliderDefaultValue)
 	elseif (option == DifficultySettingMenuID)
 		OnOptionMenuAccept(option, DifficultySettingMenuDefaultValue)
-	elseif (option == AllowSellbackToggleID && AllowSellbackToggleValue)
+	elseif (option == AllowSellbackToggleID && AllowSellbackToggleValue != AllowSellbackToggleDefaultValue)
+		OnOptionSelect(option)
+	elseif (option == QuestActiveToggleID && QuestActiveToggleValue != QuestActiveToggleDefaultValue)
 		OnOptionSelect(option)
 	endif
 endEvent
@@ -131,5 +149,18 @@ event OnOptionSelect(int option)
 		AllowSellbackToggleValue = !AllowSellbackToggleValue
 		DeathQuest.AllowSellback.SetValue(AllowSellbackToggleValue as float)
 		SetToggleOptionValue(AllowSellbackToggleID, AllowSellbackToggleValue)
+	elseif (option == QuestActiveToggleID)
+		QuestActiveToggleValue = !QuestActiveToggleValue
+		SetToggleOptionValue(QuestActiveToggleID, QuestActiveToggleValue)
+	endif
+endEvent
+
+event OnConfigClose()
+	if (DeathQuest.IsRunning())
+		if (!QuestActiveToggleValue)
+			DeathQuest.Stop()
+		endif
+	elseif (QuestActiveToggleValue)
+		DeathQuest.Start()
 	endif
 endEvent
