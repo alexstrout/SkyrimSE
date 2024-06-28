@@ -119,12 +119,29 @@ event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 		DialogueFollower.DismissMultiFollower(Self, DialogueFollower.IsFollower(ThisActor), 0, 0)
 	endif
 
-	;HACK Begin registering combat check to fix getting stuck in combat (bug in bleedouts for animals)
-	;This should be bloat-friendly as it will never fire more than once at a time, even if OnCombatStateChanged is called multiple times in this time frame
+	;We should probably immediately stop zooming around too
 	if (aeCombatState == 1)
-		SetSpeedup(ThisActor, false) ;We should probably immediately stop zooming around too
-		RegisterForSingleUpdate(CombatWaitUpdateTime)
+		SetSpeedup(ThisActor, false)
 	endif
+endEvent
+
+;Bleedout fixes for animal (or human, if needed) followers
+event OnEnterBleedout()
+	Actor ThisActor = Self.GetReference() as Actor
+
+	;Flop over if no bleedout animation
+	if (ThisActor.GetAnimationVariableBool("IsBleedingOut"))
+		return
+	endif
+	if (ThisActor.GetCombatTarget())
+		ThisActor.PushActorAway(ThisActor, Utility.RandomFloat(4.0, 10.0))
+	else
+		ThisActor.PushActorAway(ThisActor, Utility.RandomFloat(2.0, 5.0))
+	endif
+
+	;Fix sometimes getting stuck in bleedout, similar to foxPet
+	Utility.Wait(1.0)
+	ThisActor.PushActorAway(ThisActor, 0.0)
 endEvent
 
 ;Dismiss follower if s/he somehow dies, like vanilla behavior
@@ -305,16 +322,10 @@ event OnUpdate()
 		return
 	endif
 
-	;Register for longer-interval update as long as we're in combat
-	;Otherwise use a shorter-interval update to handle catchup
-	if (ThisActor.IsInCombat())
-		;If we've exited combat then actually stop combat - this fixes perma-bleedout issues
-		if (!PlayerRef.IsInCombat())
-			ThisActor.StopCombat()
-		endif
-	elseif (GlobMaxDist > 0.0 \
+	;Register for shorter-interval update to handle catchup
+	if (GlobMaxDist > 0.0 \
 	&& ThisActor.GetActorValue("WaitingForPlayer") == 0 \
-	&& !ThisActor.IsDoingFavor())
+	&& !ThisActor.IsInCombat() && !ThisActor.IsDoingFavor())
 		float maxDist = GlobMaxDist ;4096.0
 		;Note: They may starve other scripts of LOS picks if we have many followers - see https://www.creationkit.com/index.php?title=RegisterForLOS_-_Form
 		;However, as we're doing this on a fairly forviging interval (and not registering for LOS events), I think this should be OK
@@ -345,10 +356,10 @@ event OnUpdate()
 
 		RegisterForSingleUpdate(FollowUpdateTime)
 		return
-	else
-		SetSpeedup(ThisActor, false)
 	endif
 
+	;Otherwise use a longer-interval update
+	SetSpeedup(ThisActor, false)
 	RegisterForSingleUpdate(CombatWaitUpdateTime)
 endEvent
 

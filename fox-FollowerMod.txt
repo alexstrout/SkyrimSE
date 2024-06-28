@@ -34,11 +34,14 @@ However, many followers have 0 magicka growth, and are stuck at 50 magicka regar
 Thus, if needed, followers' minimum magicka is adjusted to meet their most expensive learned spell.
 
 [color=#6fa8dc][size=4]Configuration[/size][/color]
-foxFollow comes with a few config variables:
+All options can be configured via the SkyUI Mod Configuration Menu!
+
+However, you may also set these manually in the console (~ key):
 [list][*][b]1foxFollowTeleport[/b] - enable teleporting? [i]0/1 (default 1)[/i]
 [*][b]1foxFollowMaxDist[/b] - teleport distance, speedup distance is 0.5x this [i](default 4096.0)[/i]
 [*][b]1foxFollowAdjMagicka[/b] - adjust magicka for learned spells? [i]0/1 (default 1)[/i][/list]
-Type "set [b]someVar[/b] to [i]someVal[/i]" in console (~ key) to adjust config variables.
+Use "set [b]someVar[/b] to [i]someVal[/i]" to adjust these.
+Use "help 1foxFollow 3" to see the current values on your save.
 e.g. "set 1foxFollowAdjMagicka to 0" to disable follower magicka adjustment for learned spells.
 
 For performance reasons, changes only take effect after talking to any follower.
@@ -85,6 +88,11 @@ I used the original Oblivion CSR for years, and can't imagine going back and pla
 The Skyrim version is pretty rad too, and deserves a mention!
 ------
 Revision History:
+1.3.0 (2024-xx-xx):
+-- Fix longstanding animal bleedout issues - any actor without bleedout animations will now simply ragdoll, fixing their broken animation state.
+-- Fix an obscure vanilla issue where ragdolled animals could get stuck flopped over if zoning while ragdolled.
+-- Add MCM menu! Finally. :P
+
 1.2.0 (2019-10-27):
 -- Allow teleport when on mount
 -- Fix saves not remembering the "Sprint" hotkey registration for commanding all followers (SSE-specific issue)

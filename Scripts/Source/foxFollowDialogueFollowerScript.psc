@@ -29,7 +29,7 @@ GlobalVariable Property GlobalMaxDist Auto
 GlobalVariable Property GlobalAdjMagicka Auto
 
 int Property foxFollowVer Auto
-int Property foxFollowScriptVer = 2 AutoReadOnly
+int Property foxFollowScriptVer = 3 AutoReadOnly
 
 float Property InitialUpdateTime = 2.0 AutoReadOnly
 float Property DialogWaitGameTime = 0.1 AutoReadOnly
@@ -133,6 +133,9 @@ function CheckForModUpdate()
 		if (ver < 2)
 			ModUpdate2()
 		endif
+		if (ver < 3)
+			ModUpdate3()
+		endif
 
 		;Ready to rock!
 		;Possibly display update message - will only be displayed on existing saves, foxFollowVer set to -1 on new game from DialogueFollowerScript
@@ -212,6 +215,17 @@ endFunction
 function ModUpdate2()
 	;PlayerAlias purposefully unfilled until we've been init (it ends up unfilled on existing saves anyway)
 	PlayerAlias.ForceRefTo(Game.GetPlayer())
+endFunction
+function ModUpdate3()
+	;Update references to apply new flop detector spell
+	ObjectReference TempRef = None
+	int i = 0
+	while (i < Followers.Length)
+		TempRef = Followers[i].GetReference()
+		Followers[i].Clear()
+		Followers[i].ForceRefTo(TempRef)
+		i += 1
+	endwhile
 endFunction
 
 ;================
