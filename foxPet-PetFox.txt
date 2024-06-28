@@ -10,7 +10,7 @@ Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=134
 
 [color=#6fa8dc][size=4]Usage[/size][/color]
 Simply approach and talk to either fox, and they'll be recruited into your party.
-If you already have an animal following, that animal will be dismissed.
+If your party is full, your existing animal follower will be dismissed.
 Either fox will return to Dragonsreach when dismissed, and can be recruited again at any time.
 
 [color=#6fa8dc][size=4]Additional Information[/size][/color]
@@ -38,11 +38,15 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 [url=https://www.nexusmods.com/skyrimspecialedition/mods/5031]https://www.nexusmods.com/skyrimspecialedition/mods/5031[/url]
 
 [color=#6fa8dc][size=4]Known Issues[/size][/color]
-The bleedout state on animals is a little weird - since they have no bleedout animations, they will appear to just sit there in an idle combat state. However, they will eventually become active again, like normal followers.
-
 Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently unsure why this happens, but it can be worked around by saving and restarting the game, after which they will appear as expected.
 ------
 Revision History:
+1.15.0 (2024-xx-xx):
+-- Allow both foxes to be used at once as vanilla followers! Using the vanilla "human follower" slot if available.
+	(it's still recommended to use a more robust follower framework, but it works!)
+-- Fix longstanding bleedout issues - both foxes now simply ragdoll on bleedout, fixing their broken animation state.
+-- Fix an obscure vanilla issue where both foxes could get stuck flopped over if zoning while ragdolled.
+
 1.14.1 (2020-07-07):
 -- Fix a minor goof where both foxes were set to min level 6 instead of 1 - they no longer single-handedly faceroll Bleak Falls Barrow at the start at the game
 

@@ -6,7 +6,12 @@ Scriptname foxPetDialDismiss Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
-(pDialogueFollower as DialogueFollowerScript).DismissAnimal()
+DialogueFollowerScript dfScript = pDialogueFollower as DialogueFollowerScript
+if (dfScript.pFollowerAlias.GetReference() == akSpeakerRef)
+	dfScript.DismissFollower()
+else
+	dfScript.DismissAnimal()
+endif
 akSpeaker.SetPlayerTeammate(false)
 akSpeaker.SetActorValue("WaitingForPlayer", 0)
 ;END CODE

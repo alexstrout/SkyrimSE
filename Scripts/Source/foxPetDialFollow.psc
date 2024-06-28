@@ -6,7 +6,12 @@ Scriptname foxPetDialFollow Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
-(GetOwningQuest() as DialogueFollowerScript).AnimalFollow()
+DialogueFollowerScript dfScript = GetOwningQuest() as DialogueFollowerScript
+if (dfScript.pFollowerAlias.GetReference() == akSpeakerRef)
+	dfScript.FollowerFollow()
+else
+	dfScript.AnimalFollow()
+endif
 ;END CODE
 EndFunction
 ;END FRAGMENT
