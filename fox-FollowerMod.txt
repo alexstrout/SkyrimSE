@@ -91,7 +91,7 @@ Revision History:
 1.3.0 (2024-xx-xx):
 -- Fix longstanding animal bleedout issues - any actor without bleedout animations will now simply ragdoll, fixing their broken animation state.
 -- Fix an obscure vanilla issue where ragdolled animals could get stuck flopped over if zoning while ragdolled.
--- Add MCM menu! Finally. :P
+-- Add SkyUI MCM support! Finally. :P
 
 1.2.0 (2019-10-27):
 -- Allow teleport when on mount

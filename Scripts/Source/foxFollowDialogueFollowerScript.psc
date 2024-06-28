@@ -223,7 +223,9 @@ function ModUpdate3()
 	while (i < Followers.Length)
 		TempRef = Followers[i].GetReference()
 		Followers[i].Clear()
-		Followers[i].ForceRefTo(TempRef)
+		if (TempRef)
+			Followers[i].ForceRefTo(TempRef)
+		endif
 		i += 1
 	endwhile
 endFunction

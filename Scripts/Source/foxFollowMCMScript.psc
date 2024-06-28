@@ -15,8 +15,13 @@ int AdjMagickaToggleID
 bool AdjMagickaToggleValue = false
 bool Property AdjMagickaToggleDefaultValue = true AutoReadOnly
 
+int DismissFollowersToggleID
+bool DismissFollowersToggleValue = false
+bool Property DismissFollowersToggleDefaultValue = false AutoReadOnly
+
 event OnPageReset(string page)
 	SetCursorFillMode(TOP_TO_BOTTOM)
+	AddHeaderOption("Options")
 
 	MaxDistSliderValue = DialogueFollower.GlobalMaxDist.GetValue()
 	MaxDistSliderID = AddSliderOption("Speed-Up / Teleport Distance", MaxDistSliderValue, MaxDistSliderFormat)
@@ -26,6 +31,12 @@ event OnPageReset(string page)
 
 	AdjMagickaToggleValue = DialogueFollower.GlobalAdjMagicka.GetValue() as bool
 	AdjMagickaToggleID = AddToggleOption("Adjust Follower Magicka", AdjMagickaToggleValue)
+
+	AddEmptyOption()
+	AddHeaderOption("Uninstall")
+
+	DismissFollowersToggleValue = DismissFollowersToggleDefaultValue
+	DismissFollowersToggleID = AddToggleOption("Dismiss Followers", DismissFollowersToggleValue)
 endEvent
 
 event OnOptionHighlight(int option)
@@ -43,6 +54,11 @@ event OnOptionHighlight(int option)
 			+ "\nMost vanilla followers have 50 magicka regardless of level, rendering them unable to cast heavier spells." \
 			+ "\nIf enabled, their maximum magicka is adjusted up to match the most expensive spell they currently know." \
 			+ "\nDefault: True")
+	elseif (option == DismissFollowersToggleID)
+		SetInfoText("Dismiss all followers?" \
+			+ "\nTo uninstall, please first dismiss all followers by checking this toggle. (Takes effect on closing config menu.)" \
+			+ "\nOtherwise, they will permanently remember spell tomes, and may be stuck in a follow state. Please avoid doing this!" \
+			+ "\nDefault: False")
 	endif
 endEvent
 
@@ -52,6 +68,8 @@ event OnOptionDefault(int option)
 	elseif (option == TeleportToggleID && TeleportToggleValue != TeleportToggleDefaultValue)
 		OnOptionSelect(option)
 	elseif (option == AdjMagickaToggleID && AdjMagickaToggleValue != AdjMagickaToggleDefaultValue)
+		OnOptionSelect(option)
+	elseif (option == DismissFollowersToggleID && DismissFollowersToggleValue != DismissFollowersToggleDefaultValue)
 		OnOptionSelect(option)
 	endif
 endEvent
@@ -82,5 +100,15 @@ event OnOptionSelect(int option)
 		AdjMagickaToggleValue = !AdjMagickaToggleValue
 		DialogueFollower.GlobalAdjMagicka.SetValue(AdjMagickaToggleValue as float)
 		SetToggleOptionValue(AdjMagickaToggleID, AdjMagickaToggleValue)
+	elseif (option == DismissFollowersToggleID)
+		DismissFollowersToggleValue = !DismissFollowersToggleValue
+		SetToggleOptionValue(DismissFollowersToggleID, DismissFollowersToggleValue)
+	endif
+endEvent
+
+event OnConfigClose()
+	if (DismissFollowersToggleValue)
+		DialogueFollower.SetCommandMode(1)
+		DialogueFollower.DismissMultiFollower(None, true) ;isFollower N/A in CommandMode
 	endif
 endEvent
