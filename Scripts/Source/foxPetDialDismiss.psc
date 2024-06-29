@@ -8,7 +8,8 @@ Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
 DialogueFollowerScript dfScript = pDialogueFollower as DialogueFollowerScript
 if (dfScript.pFollowerAlias.GetReference() == akSpeakerRef)
-	dfScript.DismissFollower()
+	;Match other dismiss dialogues - otherwise we say line (and run this) twice! D'oh
+	dfScript.DismissFollower(0, 0)
 else
 	dfScript.DismissAnimal()
 endif
