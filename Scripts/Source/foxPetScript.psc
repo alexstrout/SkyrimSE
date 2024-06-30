@@ -11,31 +11,30 @@ Actor Property PlayerRef Auto
 
 Spell Property RagdollDetectSpell Auto
 
+int Property foxPetVer Auto
+int Property foxPetScriptVer = 1 AutoReadOnly
+
 ;================
 ;Pet Management (Add / Remove)
 ;================
 function foxPetAddPet()
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
-	;Lockpicking is tampered with in SetAnimal by vanilla scripts, so store it to be fixed later
-	;It could already be 0 if pet was hired in previous versions - however, OnActivate should fix this up
-	float tempAV = ThisActor.GetBaseActorValue("Lockpicking")
-
+	;Figure out slot to use
 	if (DialogueFollower.pPlayerAnimalCount.GetValue() as int > 0)
 		DialogueFollower.SetFollower(Self)
 	else
+		;Allow lockpicking on vanilla SetAnimal calls
+		float tempAV = ThisActor.GetBaseActorValue("Lockpicking")
 		DialogueFollower.SetAnimal(Self)
+		ThisActor.SetActorValue("Lockpicking", tempAV)
 	endif
 	ThisActor.SetPlayerTeammate(true, true)
-	ThisActor.AddSpell(RagdollDetectSpell)
 
 	;Show name-specific message
 	AnimalNameAlias.ForceRefTo(ThisActor)
 	foxPetScriptGetNewAnimalMessage.Show()
 	AnimalNameAlias.Clear()
-
-	;Revert Lockpicking to whatever it was before SetAnimal tampered with it
-	ThisActor.SetActorValue("Lockpicking", tempAV)
 endFunction
 
 function foxPetRemovePet(Actor ThatActor = None)
@@ -74,26 +73,23 @@ endFunction
 event OnActivate(ObjectReference akActivator)
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
-	;Fix 0 lockpicking on old saves caused by vanilla SetAnimal (doesn't really matter, but should be done anyway)
-	;Also for some reason PlayerRef is None on old saves...?
-	;This should also fix very old pets that are still set as a teammate even though they were dismissed
-	if (!PlayerRef || ThisActor.GetBaseActorValue("Lockpicking") == 0 \
-	|| (ThisActor.IsPlayerTeammate() && !ThisActor.HasSpell(RagdollDetectSpell)))
-		foxPetScriptUpdatingMessage.Show()
-		if (!PlayerRef)
-			PlayerRef = Game.GetPlayer()
-		endif
-		foxPetRemovePet(ThisActor)
-		ThisActor.Disable(false)
-		Utility.Wait(2.0)
-		ThisActor.Enable(false)
-		foxPetScriptUpdateCompleteMessage.Show()
-	endif
+	;Fix potentially bad stuff on old saves - but only check once
+	if (foxPetVer < foxPetScriptVer)
+		foxPetVer = foxPetScriptVer
 
-	;Normally, we don't show a trade dialogue, so make sure we grab any stray arrows etc. that may be in pet's inventory
-	;This should be unnecessary as we immediately drop any added item - but we'll still do this just in case it's a really old save etc.
-	;Actually, this is still useful for Ammo - we no longer immediately drop that, so we aren't littering the battlefield with objects as we get shot
-	ThisActor.RemoveAllItems(PlayerRef, false, true)
+		;For now, just a generic catch-all of old stuff
+		if (!PlayerRef || ThisActor.GetBaseActorValue("Lockpicking") == 0)
+			foxPetScriptUpdatingMessage.Show()
+			if (!PlayerRef)
+				PlayerRef = Game.GetPlayer()
+			endif
+			foxPetRemovePet(ThisActor)
+			ThisActor.Disable(false)
+			Utility.Wait(2.0)
+			ThisActor.Enable(false)
+			foxPetScriptUpdateCompleteMessage.Show()
+		endif
+	endif
 
 	;If we're in dialoue somehow, do nothing - may allow better compatibility with follower frameworks, etc.
 	;Also don't activate if we're doing favor - this breaks foxFollow, though we gracefully handle it there too
@@ -132,9 +128,12 @@ endEvent
 event OnPackageChange(Package akOldPackage)
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
-	;Ideally, we would remove RagdollDetectSpell when dismissed
+	;Ideally, we would add/remove RagdollDetectSpell when added/dismissed
 	;However, there's no easy way to tell when that happens, so just do it on package change
-	if (!ThisActor.IsPlayerTeammate())
+	Utility.Wait(1.0)
+	if (ThisActor.IsPlayerTeammate())
+		ThisActor.AddSpell(RagdollDetectSpell)
+	else
 		ThisActor.RemoveSpell(RagdollDetectSpell)
 	endif
 endEvent
@@ -145,23 +144,25 @@ endEvent
 event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 	Actor ThisActor = (Self as ObjectReference) as Actor
 
-	;If we're incoming follower bow / arrow, delete that junk
+	;If from player, do nothing
+	if (akSourceContainer == PlayerRef)
+		return
+	endif
+
+	;If we're an incoming follower bow / arrow, delete that junk
 	if (akBaseItem == DialogueFollower.FollowerHuntingBow \
 	|| akBaseItem == DialogueFollower.FollowerIronArrow)
 		ThisActor.RemoveItem(akBaseItem, aiItemCount)
 		return
 	endif
 
-	;If we're an incoming projectile, do nothing (these will be transferred to player next OnActivate)
-	if (akBaseItem as Ammo)
-		return
-	endif
-
-	;Immediately drop it and release ownership (don't let your pets manage your cupboard!)
+	;If doing favor, immediately drop and release ownership (don't let your pets manage your cupboard!)
 	;Note: There is a vanilla bug where items taken by followers are sometimes marked as stolen
 	;Debug.Trace("Dropping Base " + akBaseItem + " (" + aiItemCount + ")")
-	ObjectReference DroppedItem = ThisActor.DropObject(akBaseItem, aiItemCount)
-	if (DroppedItem && DroppedItem.GetActorOwner() == ThisActor.GetActorBase())
-		DroppedItem.SetActorOwner(None)
+	if (akSourceContainer && ThisActor.IsDoingFavor())
+		ObjectReference DroppedItem = ThisActor.DropObject(akBaseItem, aiItemCount)
+		if (DroppedItem && DroppedItem.GetActorOwner() == ThisActor.GetActorBase())
+			DroppedItem.SetActorOwner(None)
+		endif
 	endif
 endEvent

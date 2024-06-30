@@ -6,7 +6,7 @@ Scriptname foxPetDialTrade Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
-akspeaker.RemoveAllItems(akTransferTo = Game.GetPlayer(), abKeepOwnership = false, abRemoveQuestItems = true)
+akspeaker.OpenInventory()
 ;END CODE
 EndFunction
 ;END FRAGMENT

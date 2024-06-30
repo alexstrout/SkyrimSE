@@ -42,6 +42,7 @@ Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently un
 ------
 Revision History:
 1.15.0 (2024-xx-xx):
+-- Allow item trading! Both foxes have a rather lean encumbrance limit, so they can't hold much. If pointed at a chest / cupboard / etc. they will still happily toss everything inside all over the floor, making a huge mess.
 -- Allow both foxes to be used at once as vanilla followers! Using the vanilla "human follower" slot if available.
 	(it's still recommended to use a more robust follower framework, but it works!)
 -- Fix longstanding bleedout issues - both foxes now simply ragdoll on bleedout, fixing their broken animation state.
