@@ -200,10 +200,6 @@ function HandleDeath()
 	VendorActor.Enable(false)
 	VendorAlias.SetMovementState(0)
 
-	;Boop!
-	PlayerActor.PushActorAway(PlayerActor, 0.0)
-	Utility.Wait(1.0)
-
 	;Good to go!
 	;SendModEvent("foxDeathDispelCalmEffect")
 	ApplyCalmSpell(PlayerActor, 4) ;Actually, let us try to escape without getting insta-nuked on wakeup

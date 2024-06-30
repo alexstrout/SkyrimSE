@@ -19,6 +19,10 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
 		return
 	endif
 
+	;Chunk that mana!
+	akCaster.DamageActorValue("Magicka", 1000.0)
+	akCaster.DamageActorValue("Stamina", 1000.0)
+
 	;Init some stuff
 	GoToState("EventsYesGood") ;Enable events
 	SummonVendor = !DeathQuest.ActiveWeaknessEffect \

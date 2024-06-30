@@ -78,7 +78,8 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 ------
 Revision History:
 1.3.0 (2024-xx-xx):
--- Add some extra feedback on defeat by flopping over when actually dead (and subsequently waking up from a ragdoll state, instead of waking up already standing).
+-- Echoes no longer requires 100 Magicka to cast. Instead, it sharply chunks both your Magicka and Stamina after casting - keeping that punch to communing with death, but being less annoying to actually cast.
+-- Add some extra feedback on defeat by flopping over when actually dead.
 -- Add new "1foxDeathMinReviveTime" option - if set to 0 (default), you can't be (accidentally) revived out of a bleedout state via healing. This fixes issues with mods that have more complex injury systems, such as Starfrost. Setting this to 0.1 seconds is roughly equal to v1.2.0's behavior.
 -- Add SkyUI MCM support! Finally. :P
 

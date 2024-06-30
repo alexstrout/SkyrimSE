@@ -156,6 +156,10 @@ event OnOptionSelect(int option)
 endEvent
 
 event OnConfigClose()
+	RegisterForSingleUpdateGameTime(0.01) ;Wait until menu fully closed
+endEvent
+
+event OnUpdateGameTime()
 	if (DeathQuest.IsRunning())
 		if (!QuestActiveToggleValue)
 			DeathQuest.Stop()
