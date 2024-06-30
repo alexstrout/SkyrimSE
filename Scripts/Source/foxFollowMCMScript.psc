@@ -107,6 +107,10 @@ event OnOptionSelect(int option)
 endEvent
 
 event OnConfigClose()
+	RegisterForSingleUpdateGameTime(0.01) ;Wait until menu fully closed
+endEvent
+
+event OnUpdateGameTime()
 	if (DismissFollowersToggleValue)
 		DialogueFollower.SetCommandMode(1)
 		DialogueFollower.DismissMultiFollower(None, true) ;isFollower N/A in CommandMode
