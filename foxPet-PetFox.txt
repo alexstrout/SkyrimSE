@@ -42,6 +42,8 @@ Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently un
 ------
 Revision History:
 1.15.0 (2024-xx-xx):
+-- Add proper hellos to both foxes, fixing issues where their dialogue options sometimes wouldn't work right.
+-- Add sounds to each dialogue option, increasing feedback and responsiveness (no more need to manually skip each line).
 -- Allow item trading! Both foxes have a rather lean encumbrance limit, so they can't hold much. If pointed at a chest / cupboard / etc. they will still happily toss everything inside all over the floor, making a huge mess.
 -- Allow both foxes to be used at once as vanilla followers! Using the vanilla "human follower" slot if available.
 	(it's still recommended to use a more robust follower framework, but it works!)
