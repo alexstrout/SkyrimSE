@@ -22,6 +22,9 @@ function foxPetAddPet()
 
 	;Figure out slot to use
 	if (DialogueFollower.pPlayerAnimalCount.GetValue() as int > 0)
+		if (DialogueFollower.pPlayerFollowerCount.GetValue() as int > 0)
+			return ;No room. Oh no!
+		endif
 		DialogueFollower.SetFollower(Self)
 	else
 		;Allow lockpicking on vanilla SetAnimal calls
