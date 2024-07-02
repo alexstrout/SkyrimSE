@@ -13,8 +13,8 @@ Steam Workshop - [url=https://steamcommunity.com/sharedfiles/filedetails/?id=141
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
 [color=#6fa8dc][size=4]Usage[/size][/color]
-Recruit and otherwise use followers as normal. Currently, a maximum of 10 may be recruited.
-Vanilla followers from an existing save will be "imported" automatically.
+Recruit and otherwise use followers as normal. By default, a maximum of 3 may be recruited (configurable, up to 10).
+Vanilla followers from an existing save will be imported automatically.
 
 While in your party, followers can automatically use spells from any spell tome in their inventory.
 To teach or un-teach spells, simply trade spell tomes with your follower.
@@ -27,7 +27,7 @@ Fully supports animal followers too! (provided they use the vanilla DialogueFoll
 Catch-up / teleporting is automatic, based on distance and line of sight.
 When lagging behind, they will continually increase their SpeedMult until they catch up.
 If too far, they will instead automatically teleport behind you (at nearest ground level).
-(This includes if you are thrown in jail, etc. - there are currently no location checks)
+(This includes if you are thrown in jail, etc. - there are currently no location checks!)
 
 Spell tome learning avoids manipulating any spells a follower already knows from vanilla.
 However, many followers have 0 magicka growth, and are stuck at 50 magicka regardless of level.
@@ -37,14 +37,15 @@ Thus, if needed, followers' minimum magicka is adjusted to meet their most expen
 All options can be configured via the SkyUI Mod Configuration Menu!
 
 However, you may also set these manually in the console (~ key):
-[list][*][b]1foxFollowTeleport[/b] - enable teleporting? [i]0/1 (default 1)[/i]
+[list][*][b]1foxFollowMaxFollowers[/b] - maximum follower count, up to 10 [i](default 3)[/i]
+[*][b]1foxFollowTeleport[/b] - enable teleporting? [i]0/1 (default 1)[/i]
 [*][b]1foxFollowMaxDist[/b] - teleport distance, speedup distance is 0.5x this [i](default 4096.0)[/i]
 [*][b]1foxFollowAdjMagicka[/b] - adjust magicka for learned spells? [i]0/1 (default 1)[/i][/list]
 Use "set [b]someVar[/b] to [i]someVal[/i]" to adjust these.
 Use "help 1foxFollow 3" to see the current values on your save.
 e.g. "set 1foxFollowAdjMagicka to 0" to disable follower magicka adjustment for learned spells.
 
-For performance reasons, changes only take effect after talking to any follower.
+For performance reasons, changes only take effect after talking to any follower, loading a save, or exiting the MCM.
 Setting 1foxFollowMaxDist to -1 will completely disable catch-up / teleport functionality.
 
 [color=#6fa8dc][size=4]Compatibility[/size][/color]
@@ -89,6 +90,10 @@ The Skyrim version is pretty rad too, and deserves a mention!
 ------
 Revision History:
 1.3.0 (2024-xx-xx):
+-- Prevent hiring followers if they're dead, fixing a vanilla bug where any Stray Dog could still be hired if interacted with while dead.
+	(technically, we immediately dismiss them, to avoid breaking any calling script that assumes they're successfully hired)
+-- As a small bonus, a vanilla Stray Dog can now be re-hired after dismissal (simply resets dog's script to "Waiting" state, if applicable).
+-- Add new "1foxFollowMaxFollowers" option to set maximum follower count, which is now 3 by default (and recommended). 10 is still the hard max.
 -- Fix longstanding animal bleedout issues - any actor without bleedout animations will now simply ragdoll, fixing their broken animation state.
 -- Fix an obscure vanilla issue where ragdolled animals could get stuck flopped over if zoning while ragdolled.
 -- Add SkyUI MCM support! Finally. :P

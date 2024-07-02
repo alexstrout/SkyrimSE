@@ -24,6 +24,7 @@ Message Property FollowerForgetSpellMessage Auto
 Message Property FollowerCommandModeMessage Auto
 Message Property ScriptUpdateCompleteMessage Auto
 
+GlobalVariable Property GlobalMaxFollowers Auto
 GlobalVariable Property GlobalTeleport Auto
 GlobalVariable Property GlobalMaxDist Auto
 GlobalVariable Property GlobalAdjMagicka Auto
@@ -150,6 +151,9 @@ function CheckForModUpdate()
 		i -= 1
 		(Followers[i] as foxFollowFollowerAliasScript).UpdateGlobalValueCache()
 	endwhile
+
+	;Also re-tally our followers (in case global changed)
+	UpdateFollowerCount()
 
 	;Input.IsKeyPressed seems to have a hard time with gamepads - so just listen for Sprint here
 	;Note: Placed here to run every check in case we somehow unregister our key on accident (e.g. Steam cloud not carrying SKSE co-save)
@@ -456,9 +460,13 @@ int function GetNumFollowers()
 endFunction
 
 ;Update follower count (whether we can recruit new followers) based on how many followers we actually have - returns true if at capacity
-;Currently called on SetMultiFollower, DismissMultiFollowerClearAlias, and any current followers' OnActivate
+;Currently called on SetMultiFollower, DismissMultiFollowerClearAlias, and CheckForModUpdate
 bool function UpdateFollowerCount()
-	if (GetNumFollowers() >= Followers.Length)
+	int maxFollowers = GlobalMaxFollowers.GetValue() as int
+	if (maxFollowers > Followers.Length)
+		maxFollowers = Followers.Length
+	endif
+	if (GetNumFollowers() >= maxFollowers)
 		DialogueFollower.pPlayerFollowerCount.SetValue(1)
 		DialogueFollower.pPlayerAnimalCount.SetValue(1)
 		return true
@@ -612,7 +620,14 @@ function SetMultiFollower(ObjectReference FollowerRef, bool isFollower, Referenc
 	;Could likely replace FollowerInfoFaction with this? Might be cleaner and would require no Actor loaded
 	;(FollowerAlias as foxFollowFollowerAliasScript).IsFollower = isFollower
 
+	;We're done!
 	SetPreferredFollowerAlias(FollowerActor)
+
+	;But wait! If we somehow added a dead follower, we should probably dismiss them
+	;e.g. Stray Dog if attempting to activate for the first time while dead, vanilla bug
+	if (FollowerActor.IsDead())
+		DismissMultiFollower(FollowerAlias, isFollower, 0, 0)
+	endif
 endFunction
 
 ;Version of FollowerWait / FollowerFollow that handles multiple followers
@@ -728,6 +743,12 @@ function DismissMultiFollower(ReferenceAlias FollowerAlias, bool isFollower, int
 	FollowerActor.StopCombatAlarm()
 	FollowerActor.SetPlayerTeammate(false)
 	FollowerActor.SetActorValue("WaitingForPlayer", 0)
+
+	;As a small bonus - allow us to re-hire Stray Dog
+	WEDogFollowerScript WEDogScript = FollowerAlias.GetReference() as WEDogFollowerScript
+	if (WEDogScript && WEDogScript.GetState() == "done")
+		WEDogScript.GotoState("Waiting")
+	endif
 
 	;Per Vanilla - "PATCH 1.9: 77615: remove unplayable hunting bow when follower is dismissed"
 	;Added in additional safety checks - may not be set on old scripts, but we now patch it in ModUpdate

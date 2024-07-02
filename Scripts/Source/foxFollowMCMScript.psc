@@ -2,6 +2,11 @@ scriptname foxFollowMCMScript extends SKI_ConfigBase
 
 foxFollowDialogueFollowerScript Property DialogueFollower Auto
 
+int MaxFollowersSliderID = 0
+float MaxFollowersSliderValue = 0.0
+float Property MaxFollowersSliderDefaultValue = 3.0 AutoReadOnly
+string Property MaxFollowersSliderFormat = "{0} Followers" AutoReadOnly
+
 int MaxDistSliderID = 0
 float MaxDistSliderValue = 0.0
 float Property MaxDistSliderDefaultValue = 4096.0 AutoReadOnly
@@ -23,6 +28,9 @@ event OnPageReset(string page)
 	SetCursorFillMode(TOP_TO_BOTTOM)
 	AddHeaderOption("Options")
 
+	MaxFollowersSliderValue = DialogueFollower.GlobalMaxFollowers.GetValue()
+	MaxFollowersSliderID = AddSliderOption("Max Follower Count", MaxFollowersSliderValue, MaxFollowersSliderFormat)
+
 	MaxDistSliderValue = DialogueFollower.GlobalMaxDist.GetValue()
 	MaxDistSliderID = AddSliderOption("Speed-Up / Teleport Distance", MaxDistSliderValue, MaxDistSliderFormat)
 
@@ -40,7 +48,10 @@ event OnPageReset(string page)
 endEvent
 
 event OnOptionHighlight(int option)
-	if (option == MaxDistSliderID)
+	if (option == MaxFollowersSliderID)
+		SetInfoText("Maximum allowed followers. (Only applies to new followers.)" \
+			+ "\nDefault: 3 Followers")
+	elseif (option == MaxDistSliderID)
 		SetInfoText("Follower teleport distance. Speed-up distance is half this number." \
 			+ "\n0 Units: Nearly constant teleporting. Oops!" \
 			+ "\nNegative Units: Completely disable speed-up / teleport functionality." \
@@ -63,7 +74,9 @@ event OnOptionHighlight(int option)
 endEvent
 
 event OnOptionDefault(int option)
-	if (option == MaxDistSliderID)
+	if (option == MaxFollowersSliderID)
+		OnOptionSliderAccept(option, MaxFollowersSliderDefaultValue)
+	elseif (option == MaxDistSliderID)
 		OnOptionSliderAccept(option, MaxDistSliderDefaultValue)
 	elseif (option == TeleportToggleID && TeleportToggleValue != TeleportToggleDefaultValue)
 		OnOptionSelect(option)
@@ -75,7 +88,12 @@ event OnOptionDefault(int option)
 endEvent
 
 event OnOptionSliderOpen(int option)
-	if (option == MaxDistSliderID)
+	if (option == MaxFollowersSliderID)
+		SetSliderDialogStartValue(MaxFollowersSliderValue)
+		SetSliderDialogDefaultValue(MaxFollowersSliderDefaultValue)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == MaxDistSliderID)
 		SetSliderDialogStartValue(MaxDistSliderValue)
 		SetSliderDialogDefaultValue(MaxDistSliderDefaultValue)
 		SetSliderDialogRange(-1024.0, 16384.0)
@@ -84,7 +102,11 @@ event OnOptionSliderOpen(int option)
 endEvent
 
 event OnOptionSliderAccept(int option, float value)
-	if (option == MaxDistSliderID)
+	if (option == MaxFollowersSliderID)
+		DialogueFollower.GlobalMaxFollowers.SetValue(value)
+		MaxFollowersSliderValue = value
+		SetSliderOptionValue(MaxFollowersSliderID, MaxFollowersSliderValue, MaxFollowersSliderFormat)
+	elseif (option == MaxDistSliderID)
 		DialogueFollower.GlobalMaxDist.SetValue(value)
 		MaxDistSliderValue = value
 		SetSliderOptionValue(MaxDistSliderID, MaxDistSliderValue, MaxDistSliderFormat)
@@ -115,4 +137,5 @@ event OnUpdateGameTime()
 		DialogueFollower.SetCommandMode(1)
 		DialogueFollower.DismissMultiFollower(None, true) ;isFollower N/A in CommandMode
 	endif
+	DialogueFollower.CheckForModUpdate() ;Propegate new GVs to all followers
 endEvent

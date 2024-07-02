@@ -56,9 +56,8 @@ event OnActivate(ObjectReference akActivator)
 		endif
 		DialogueFollower.SetCommandMode(commandMode)
 
-		;Check for mod update, and re-tally our followers (and update our GV cache, which is also applied to all followers)
+		;Check for mod update, which will also re-tally our followers and update our GV cache (which is also applied to all followers)
 		DialogueFollower.CheckForModUpdate()
-		DialogueFollower.UpdateFollowerCount()
 
 		;Set ourself as the preferred follower
 		;CommandMode will also stay valid the whole time we're in dialogue, until either consumed by a command or cleared on DialogueFollower update by ClearCommandMode
