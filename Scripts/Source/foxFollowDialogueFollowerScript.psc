@@ -437,36 +437,44 @@ bool function IsFollower(Actor FollowerActor)
 	return FollowerActor.IsInFaction(FollowerInfoFaction)
 endFunction
 
-;Get how many followers we actually have - also return breakdown by follower type (Follower / Animal) in out variables
-int outNumFollowers
-int outNumAnimals
-int function GetNumFollowers()
-	outNumFollowers = 0
-	outNumAnimals = 0
+;Get how many followers we actually have - also optionally return breakdown by follower type (Follower = 1 / Animal = 2)
+int function GetNumFollowers(int outType = 0)
+	int numFollowers = 0
+	int numAnimals = 0
 	Actor FollowerActor = None
 	int i = 0
 	while (i < Followers.Length)
 		FollowerActor = Followers[i].GetReference() as Actor
 		if (FollowerActor)
 			if (IsFollower(FollowerActor))
-				outNumFollowers += 1
+				numFollowers += 1
 			else
-				outNumAnimals += 1
+				numAnimals += 1
 			endif
 		endif
 		i += 1
 	endwhile
-	return outNumFollowers + outNumAnimals
+	if (outType == 1)
+		return numFollowers
+	elseif (outType == 2)
+		return numAnimals
+	endif
+	return numFollowers + numAnimals
+endFunction
+
+;Get current max follower count by min of GV or Followers.Length
+int function GetMaxFollowerCount()
+	int maxFollowers = GlobalMaxFollowers.GetValue() as int
+	if (maxFollowers > Followers.Length)
+		maxFollowers = Followers.Length
+	endif
+	return maxFollowers
 endFunction
 
 ;Update follower count (whether we can recruit new followers) based on how many followers we actually have - returns true if at capacity
 ;Currently called on SetMultiFollower, DismissMultiFollowerClearAlias, and CheckForModUpdate
 bool function UpdateFollowerCount()
-	int maxFollowers = GlobalMaxFollowers.GetValue() as int
-	if (maxFollowers > Followers.Length)
-		maxFollowers = Followers.Length
-	endif
-	if (GetNumFollowers() >= maxFollowers)
+	if (GetNumFollowers() >= GetMaxFollowerCount())
 		DialogueFollower.pPlayerFollowerCount.SetValue(1)
 		DialogueFollower.pPlayerAnimalCount.SetValue(1)
 		return true
@@ -689,7 +697,7 @@ function DismissMultiFollower(ReferenceAlias FollowerAlias, bool isFollower, int
 		;Attempt to dismiss a single member of the opposite follow type if we're full, to fix foxPet bugz :)
 		;This also makes sense because if PlayerAnimalCount is 1 we would expect DismissAnimal to make room for a new Animal follower
 		;Switching up follower type is safe because we check for it down below - but we don't want to flip isFollower yet!
-		if (!FollowerAlias && GetNumFollowers() >= Followers.Length)
+		if (!FollowerAlias && GetNumFollowers() >= GetMaxFollowerCount())
 			FollowerAlias = GetPreferredFollowerAlias(!isFollower)
 		endif
 	endif

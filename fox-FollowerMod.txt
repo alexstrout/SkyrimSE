@@ -97,6 +97,10 @@ Revision History:
 -- Fix longstanding animal bleedout issues - any actor without bleedout animations will now simply ragdoll, fixing their broken animation state.
 -- Fix an obscure vanilla issue where ragdolled animals could get stuck flopped over if zoning while ragdolled.
 -- Add SkyUI MCM support! Finally. :P
+-- Script API updates:
+	foxFollowDialogueFollowerScript:
+		GetMaxFollowerCount() - new, get current max follower count
+		GetNumFollowers(int outType = 0) - add optional outType parameter to get count by follower type (Follower = 1 / Animal = 2)
 
 1.2.0 (2019-10-27):
 -- Allow teleport when on mount
