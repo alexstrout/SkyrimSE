@@ -49,22 +49,19 @@ function foxPetRemovePet(Actor ThatActor = None)
 		if (FollowerRef == Self as ObjectReference)
 			;We're a follower!
 			ThatActor = FollowerRef as Actor
+			DialogueFollower.DismissFollower()
 		else
 			;We're an animal! Or don't care, and will dismiss existing animal
 			if (AnimalRef != Self as ObjectReference)
 				foxPetScriptHasAnimalMessage.Show()
 			endif
 			ThatActor = AnimalRef as Actor
+			DialogueFollower.DismissAnimal()
 		endif
 	endif
 
 	;Do follow-up dismissal stuff like foxPetDialDismiss
 	if (ThatActor)
-		if (ThatActor == FollowerRef)
-			DialogueFollower.DismissFollower()
-		elseif (ThatActor == AnimalRef)
-			DialogueFollower.DismissAnimal()
-		endif
 		ThatActor.SetPlayerTeammate(false)
 		ThatActor.SetActorValue("WaitingForPlayer", 0)
 	endif
