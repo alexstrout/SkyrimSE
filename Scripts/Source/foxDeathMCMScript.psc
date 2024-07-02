@@ -111,7 +111,7 @@ event OnOptionSliderOpen(int option)
 	elseif (option == ReviveTimeSliderID)
 		SetSliderDialogStartValue(ReviveTimeSliderValue)
 		SetSliderDialogDefaultValue(ReviveTimeSliderDefaultValue)
-		SetSliderDialogRange(0.0, 20.0)
+		SetSliderDialogRange(0.0, 30.0)
 		SetSliderDialogInterval(1.0)
 	endif
 endEvent

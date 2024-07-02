@@ -9,8 +9,8 @@ To Be Decided
 Requires SKSE64: [url=https://skse.silverlock.org]https://skse.silverlock.org[/url]
 
 [color=#6fa8dc][size=4]Usage[/size][/color]
-Simply get rekt as normal; upon taking fatal damage, a bleedout state is triggered for 20 seconds.
-If no friendly actors are nearby during this time, bleedout instead transitions to a defeat state.
+Upon taking fatal damage, a bleedout state is triggered for 20 seconds, similar to most followers.
+If no nearby allies are left standing during this time, bleedout instead transitions to a defeat state.
 If defeated, you are transported to a random nearby location, and all equipped gear is confiscated.
 
 Upon revive, a stacking (20...80%) penalty to Magicka and Stamina regen is inflicted for 12 minutes.
@@ -78,7 +78,7 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 ------
 Revision History:
 1.3.0 (2024-xx-xx):
--- Echoes no longer requires 100 Magicka to cast. Instead, it sharply chunks both your Magicka and Stamina after casting - keeping that punch to communing with death, but being less annoying to actually cast.
+-- Echoes no longer requires 100 Magicka to cast. Instead, it sharply chunks both your Magicka and Stamina after casting - keeping that punch when communing with death, but being less annoying to actually cast.
 -- Add some extra feedback on defeat by flopping over when actually dead.
 -- Add new "1foxDeathMinReviveTime" option - if set to 0 (default), you can't be (accidentally) revived out of a bleedout state via healing. This fixes issues with mods that have more complex injury systems, such as Starfrost. Setting this to 0.1 seconds is roughly equal to v1.2.0's behavior.
 -- Add SkyUI MCM support! Finally. :P
