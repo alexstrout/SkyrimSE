@@ -1,4 +1,4 @@
-Scriptname foxPetScript extends ObjectReference
+Scriptname foxPetScript extends Actor
 {Derivative of WEDogFollowerScript - now shares some common functionality with foxFollowFollowerAliasScript}
 
 DialogueFollowerScript Property DialogueFollower Auto
@@ -18,7 +18,7 @@ int Property foxPetScriptVer = 1 AutoReadOnly
 ;Pet Management (Add / Remove)
 ;================
 function foxPetAddPet()
-	Actor ThisActor = (Self as ObjectReference) as Actor
+	Actor ThisActor = Self as Actor
 
 	;Figure out slot to use
 	if (DialogueFollower.pPlayerAnimalCount.GetValue() as int > 0)
@@ -71,7 +71,7 @@ endFunction
 ;Manual State Management
 ;================
 event OnActivate(ObjectReference akActivator)
-	Actor ThisActor = (Self as ObjectReference) as Actor
+	Actor ThisActor = Self as Actor
 
 	;Fix potentially bad stuff on old saves - but only check once
 	if (foxPetVer < foxPetScriptVer)
@@ -112,7 +112,7 @@ endEvent
 ;Automatic State Management
 ;================
 event OnEnterBleedout()
-	Actor ThisActor = (Self as ObjectReference) as Actor
+	Actor ThisActor = Self as Actor
 
 	;Flop over if no bleedout animation
 	if (ThisActor.GetAnimationVariableBool("IsBleedingOut"))
@@ -126,7 +126,7 @@ event OnEnterBleedout()
 endEvent
 
 event OnPackageChange(Package akOldPackage)
-	Actor ThisActor = (Self as ObjectReference) as Actor
+	Actor ThisActor = Self as Actor
 
 	;Ideally, we would add/remove RagdollDetectSpell when added/dismissed
 	;However, there's no easy way to tell when that happens, so just do it on package change
@@ -142,7 +142,7 @@ endEvent
 ;Item Management
 ;================
 event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
-	Actor ThisActor = (Self as ObjectReference) as Actor
+	Actor ThisActor = Self as Actor
 
 	;If from player, do nothing
 	if (akSourceContainer == PlayerRef)
@@ -164,5 +164,19 @@ event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemRefere
 		if (DroppedItem && DroppedItem.GetActorOwner() == ThisActor.GetActorBase())
 			DroppedItem.SetActorOwner(None)
 		endif
+	endif
+endEvent
+
+event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	Actor ThisActor = Self as Actor
+
+	;There's no easy way to prevent us from equipping scrolls, so just immediately cast 'em
+	;Otherwise, we'll get stuck in a bad state, as we lack anims for casting
+	Scroll SomeScroll = akBaseObject as Scroll
+	if (SomeScroll)
+		;This will effectively mag-dump our scrolls, so at least wait some random time
+		Utility.Wait(Utility.RandomFloat(0.5, 2.0))
+		SomeScroll.Cast(ThisActor, ThisActor.GetCombatTarget())
+		UnequipItem(akBaseObject) ;Unequip any left over, to repeat
 	endif
 endEvent
