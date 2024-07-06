@@ -41,7 +41,7 @@ Optionally, use ReSaver (or similar) to remove any leftover references in your s
 Very rarely, one or both foxes won't spawn inside Dragonsreach. I'm currently unsure why this happens, but it can be worked around by saving and restarting the game, after which they will appear as expected.
 ------
 Revision History:
-1.15.0 (2024-xx-xx):
+1.15.0 (2024-07-06):
 -- Add proper hellos to both foxes, fixing issues where their dialogue options sometimes wouldn't work right.
 -- Add sounds to each dialogue option, increasing feedback and responsiveness (no more need to manually skip each line).
 -- Allow item trading! Both foxes have a rather lean encumbrance limit, so they can't hold much. If pointed at a chest / cupboard / etc. they will still happily toss everything inside all over the floor, making a huge mess.
